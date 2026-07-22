@@ -69,6 +69,9 @@ CONTRACTS = {
             "source_record_id",
             "assay_run_id",
             "specimen_id",
+            "run_sequence",
+            "repeat_of_run_id",
+            "repeat_reason",
             "run_started_at",
             "run_completed_at",
             "instrument_result_code",
@@ -78,7 +81,9 @@ CONTRACTS = {
         controlled_fields={
             "instrument_result_code": frozenset({"positive", "negative", "invalid"}),
             "qc_status": frozenset({"pass", "fail"}),
+            "repeat_reason": frozenset({"qc_failure", "inhibited", "technical", "other"}),
         },
+        optional_value_fields=frozenset({"repeat_of_run_id", "repeat_reason"}),
     ),
     "communication": SourceContract(
         filename="communication_events.csv",
@@ -124,6 +129,25 @@ def _validate_row(
         for field in ("assay_run_id", "result_category"):
             if not row.get(field, "").strip():
                 errors.append(f"{field} is required for result_verified")
+
+    if contract.filename == "osna_runs.csv":
+        sequence_value = row.get("run_sequence", "")
+        try:
+            run_sequence = int(sequence_value)
+            if run_sequence < 1:
+                raise ValueError
+        except ValueError:
+            errors.append("run_sequence must be a positive integer")
+        else:
+            repeat_of_run_id = row.get("repeat_of_run_id", "")
+            repeat_reason = row.get("repeat_reason", "")
+            if run_sequence == 1 and (repeat_of_run_id or repeat_reason):
+                errors.append("initial runs must not contain repeat metadata")
+            if run_sequence > 1:
+                if not repeat_of_run_id:
+                    errors.append("repeat_of_run_id is required for repeat runs")
+                if not repeat_reason:
+                    errors.append("repeat_reason is required for repeat runs")
 
     for field in contract.timestamp_fields:
         value = row.get(field, "").strip()

@@ -10,7 +10,8 @@ from osna_pipeline.domain.models import CanonicalEvent, EVENT_ORDER, QualityIssu
 def validate_specimen_timeline(
     context: SpecimenContext,
     events: list[CanonicalEvent],
-) -> tuple[dict[str, CanonicalEvent], list[QualityIssue], str]:
+    invalid_run_ids: set[str] | None = None,
+) -> tuple[dict[str, CanonicalEvent], list[QualityIssue], str, str]:
     """Return unique events, quality issues, and the specimen-level pathway status."""
 
     grouped: dict[str, list[CanonicalEvent]] = defaultdict(list)
@@ -21,9 +22,58 @@ def validate_specimen_timeline(
     issues: list[QualityIssue] = []
     has_error = False
     has_missing = False
+    invalid_run_ids = invalid_run_ids or set()
+
+    verifications = grouped.get("result_verified", [])
+    selected_run_id = verifications[0].assay_run_id if len(verifications) == 1 else ""
+    assay_run_ids = {
+        event.assay_run_id
+        for event in events
+        if event.event_type in {"assay_started", "assay_completed"} and event.assay_run_id
+    }
+    timeline_run_id = selected_run_id
+    if not timeline_run_id and len(assay_run_ids) == 1:
+        timeline_run_id = next(iter(assay_run_ids))
+
+    if selected_run_id in invalid_run_ids:
+        has_error = True
+
+    run_scoped_event_types = {
+        "assay_started",
+        "assay_completed",
+        "result_communicated",
+        "theatre_acknowledged",
+    }
+
+    if selected_run_id:
+        for event_type in ("result_communicated", "theatre_acknowledged"):
+            mismatches = [
+                event
+                for event in grouped.get(event_type, [])
+                if event.assay_run_id != selected_run_id
+            ]
+            for mismatch in mismatches:
+                has_error = True
+                issues.append(
+                    QualityIssue(
+                        issue_code="RUN_SCOPED_EVENT_MISMATCH",
+                        severity="error",
+                        details=(
+                            f"{event_type} refers to {mismatch.assay_run_id}, but the "
+                            f"laboratory-verified result refers to {selected_run_id}"
+                        ),
+                        case_id=context.case_id,
+                        procedure_id=context.procedure_id,
+                        specimen_id=context.specimen_id,
+                        assay_run_id=mismatch.assay_run_id,
+                        event_type=event_type,
+                    )
+                )
 
     for event_type in EVENT_ORDER:
         matches = grouped.get(event_type, [])
+        if event_type in run_scoped_event_types and timeline_run_id:
+            matches = [event for event in matches if event.assay_run_id == timeline_run_id]
         if not matches:
             has_missing = True
             issues.append(
@@ -79,4 +129,4 @@ def validate_specimen_timeline(
         status = "incomplete"
     else:
         status = "complete"
-    return unique_events, issues, status
+    return unique_events, issues, status, selected_run_id

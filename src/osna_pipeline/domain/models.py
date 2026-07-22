@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "1.1.0"
 
 EVENT_ORDER = (
     "specimen_removed",
@@ -25,6 +25,9 @@ CANONICAL_FIELDS = (
     "procedure_id",
     "specimen_id",
     "assay_run_id",
+    "run_sequence",
+    "repeat_of_run_id",
+    "repeat_reason",
     "event_type",
     "event_time",
     "result_category",
@@ -42,6 +45,7 @@ EXCEPTION_FIELDS = (
     "case_id",
     "procedure_id",
     "specimen_id",
+    "assay_run_id",
     "source_system",
     "source_record_id",
     "event_type",
@@ -71,6 +75,9 @@ class CanonicalEvent:
     source_record_id: str
     source_field: str
     assay_run_id: str = ""
+    run_sequence: str = ""
+    repeat_of_run_id: str = ""
+    repeat_reason: str = ""
     result_category: str = ""
     instrument_result_code: str = ""
     qc_status: str = ""
@@ -83,6 +90,9 @@ class CanonicalEvent:
             "procedure_id": self.procedure_id,
             "specimen_id": self.specimen_id,
             "assay_run_id": self.assay_run_id,
+            "run_sequence": self.run_sequence,
+            "repeat_of_run_id": self.repeat_of_run_id,
+            "repeat_reason": self.repeat_reason,
             "event_type": self.event_type,
             "event_time": self.event_time.isoformat(timespec="seconds"),
             "result_category": self.result_category,
@@ -105,6 +115,7 @@ class QualityIssue:
     case_id: str = ""
     procedure_id: str = ""
     specimen_id: str = ""
+    assay_run_id: str = ""
     source_system: str = ""
     source_record_id: str = ""
     event_type: str = ""

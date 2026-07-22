@@ -17,7 +17,14 @@ from osna_pipeline.domain.models import (
     SpecimenContext,
 )
 from osna_pipeline.matching import build_run_index, build_specimen_index
-from osna_pipeline.transformations import TIMELINE_FIELDS, build_timelines
+from osna_pipeline.transformations import (
+    ASSAY_RUN_FIELDS,
+    PROCEDURE_FIELDS,
+    TIMELINE_FIELDS,
+    build_assay_run_summaries,
+    build_procedure_summaries,
+    build_timelines,
+)
 
 
 def _orphan_specimen_issue(row: dict[str, str], source_system: str) -> QualityIssue:
@@ -144,6 +151,9 @@ def _canonicalise_analyser(
                     procedure_id=context.procedure_id,
                     specimen_id=context.specimen_id,
                     assay_run_id=row["assay_run_id"],
+                    run_sequence=row["run_sequence"],
+                    repeat_of_run_id=row["repeat_of_run_id"],
+                    repeat_reason=row["repeat_reason"],
                     event_type=event_type,
                     event_time=parse_timestamp(row[source_field], source_field),
                     instrument_result_code=(
@@ -275,6 +285,7 @@ def _issue_sort_key(issue: QualityIssue) -> tuple[str, ...]:
     return (
         issue.case_id,
         issue.specimen_id,
+        issue.assay_run_id,
         issue.issue_code,
         issue.source_system,
         issue.source_record_id,
@@ -289,8 +300,11 @@ def run_pipeline(input_dir: Path, output_dir: Path) -> dict[str, object]:
     output_dir = Path(output_dir)
     loaded = load_sources(input_dir)
     events, contexts, issues = canonicalise_sources(loaded)
-    timelines, timeline_issues = build_timelines(contexts, events)
+    assay_runs, assay_run_issues, invalid_run_ids = build_assay_run_summaries(events)
+    issues.extend(assay_run_issues)
+    timelines, timeline_issues = build_timelines(contexts, events, invalid_run_ids)
     issues.extend(timeline_issues)
+    procedures = build_procedure_summaries(timelines, assay_runs)
     issues.sort(key=_issue_sort_key)
 
     status_counts = Counter(row["pathway_status"] for row in timelines)
@@ -300,7 +314,11 @@ def run_pipeline(input_dir: Path, output_dir: Path) -> dict[str, object]:
         "synthetic_data_only": True,
         "input_record_count": loaded.input_record_count,
         "canonical_event_count": len(events),
+        "procedure_count": len(procedures),
         "specimen_count": len(contexts),
+        "assay_run_count": len(assay_runs),
+        "repeat_run_count": sum(int(row["run_sequence"] or 0) > 1 for row in assay_runs),
+        "failed_qc_run_count": sum(row["qc_status"] == "fail" for row in assay_runs),
         "timeline_status_counts": dict(sorted(status_counts.items())),
         "exception_count": len(issues),
         "exception_counts_by_code": dict(sorted(issue_counts.items())),
@@ -309,6 +327,8 @@ def run_pipeline(input_dir: Path, output_dir: Path) -> dict[str, object]:
     output_dir.mkdir(parents=True, exist_ok=True)
     _write_csv(output_dir / "canonical_events.csv", CANONICAL_FIELDS, [e.to_row() for e in events])
     _write_csv(output_dir / "case_timelines.csv", TIMELINE_FIELDS, timelines)
+    _write_csv(output_dir / "assay_runs.csv", ASSAY_RUN_FIELDS, assay_runs)
+    _write_csv(output_dir / "procedure_summaries.csv", PROCEDURE_FIELDS, procedures)
     _write_csv(output_dir / "exceptions.csv", EXCEPTION_FIELDS, [i.to_row() for i in issues])
     with (output_dir / "pipeline_summary.json").open("w", encoding="utf-8") as handle:
         json.dump(summary, handle, indent=2, sort_keys=True)

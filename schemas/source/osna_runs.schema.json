@@ -1,12 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.invalid/osna/source/osna-runs/v1",
+  "$id": "https://example.invalid/osna/source/osna-runs/v2",
   "title": "Synthetic OSNA analyser run",
   "type": "object",
   "required": [
     "source_record_id",
     "assay_run_id",
     "specimen_id",
+    "run_sequence",
+    "repeat_of_run_id",
+    "repeat_reason",
     "run_started_at",
     "run_completed_at",
     "instrument_result_code",
@@ -16,10 +19,30 @@
     "source_record_id": {"type": "string", "minLength": 1},
     "assay_run_id": {"type": "string", "pattern": "^RUN-SYN-"},
     "specimen_id": {"type": "string", "pattern": "^SPEC-SYN-"},
+    "run_sequence": {"type": "integer", "minimum": 1},
+    "repeat_of_run_id": {"type": "string"},
+    "repeat_reason": {"enum": ["", "qc_failure", "inhibited", "technical", "other"]},
     "run_started_at": {"type": "string", "format": "date-time"},
     "run_completed_at": {"type": "string", "format": "date-time"},
     "instrument_result_code": {"enum": ["positive", "negative", "invalid"]},
     "qc_status": {"enum": ["pass", "fail"]}
   },
+  "allOf": [
+    {
+      "if": {"properties": {"run_sequence": {"minimum": 2}}},
+      "then": {
+        "properties": {
+          "repeat_of_run_id": {"minLength": 1},
+          "repeat_reason": {"enum": ["qc_failure", "inhibited", "technical", "other"]}
+        }
+      },
+      "else": {
+        "properties": {
+          "repeat_of_run_id": {"maxLength": 0},
+          "repeat_reason": {"const": ""}
+        }
+      }
+    }
+  ],
   "additionalProperties": false
 }

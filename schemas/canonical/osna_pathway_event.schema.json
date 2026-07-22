@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.invalid/osna/canonical/pathway-event/v1",
+  "$id": "https://example.invalid/osna/canonical/pathway-event/v1.1",
   "title": "Canonical OSNA pathway event",
   "type": "object",
   "required": [
@@ -15,11 +15,14 @@
     "source_field"
   ],
   "properties": {
-    "schema_version": {"const": "1.0.0"},
+    "schema_version": {"const": "1.1.0"},
     "case_id": {"type": "string"},
     "procedure_id": {"type": "string"},
     "specimen_id": {"type": "string"},
     "assay_run_id": {"type": "string"},
+    "run_sequence": {"type": "string", "pattern": "^$|^[1-9][0-9]*$"},
+    "repeat_of_run_id": {"type": "string"},
+    "repeat_reason": {"enum": ["", "qc_failure", "inhibited", "technical", "other"]},
     "event_type": {
       "enum": [
         "specimen_removed",

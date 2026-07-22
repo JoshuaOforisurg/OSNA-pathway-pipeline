@@ -4,3 +4,7 @@ COM-002,SPEC-SYN-001,RUN-SYN-001,theatre_acknowledged,2026-07-20T10:00:00+01:00,
 COM-003,SPEC-SYN-002,RUN-SYN-002,result_communicated,2026-07-20T11:06:00+01:00,telephone
 COM-004,SPEC-SYN-003,RUN-SYN-003,result_communicated,2026-07-20T11:50:00+01:00,telephone
 COM-005,SPEC-SYN-003,RUN-SYN-003,theatre_acknowledged,2026-07-20T11:51:00+01:00,telephone
+COM-006,SPEC-SYN-004A,RUN-SYN-004B,result_communicated,2026-07-20T14:15:00+01:00,telephone
+COM-007,SPEC-SYN-004A,RUN-SYN-004B,theatre_acknowledged,2026-07-20T14:16:00+01:00,telephone
+COM-008,SPEC-SYN-004B,RUN-SYN-005,result_communicated,2026-07-20T14:00:00+01:00,telephone
+COM-009,SPEC-SYN-004B,RUN-SYN-005,theatre_acknowledged,2026-07-20T14:01:00+01:00,telephone

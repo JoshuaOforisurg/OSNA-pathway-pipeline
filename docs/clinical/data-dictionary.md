@@ -8,9 +8,12 @@ meaning, ownership, terminology, and availability require local review.
 | Field | Meaning | Rule |
 | --- | --- | --- |
 | `case_id` | Fictional pathway identity | Established from the theatre source in version 1 |
-| `procedure_id` | Fictional operative episode | One procedure context per specimen in version 1 |
+| `procedure_id` | Fictional operative episode | May contain one or more specimens |
 | `specimen_id` | Fictional sentinel-node specimen identity | Exact matching only; ambiguity is quarantined |
 | `assay_run_id` | Fictional technical OSNA run identity | Must map to one specimen |
+| `run_sequence` | Order of assay attempts for the specimen | Positive integer; `1` is the initial run |
+| `repeat_of_run_id` | Earlier run that prompted a repeat | Required for every run after sequence `1` |
+| `repeat_reason` | Synthetic controlled reason for a repeat | Required for repeat runs; never inferred from QC alone |
 | `event_type` | One controlled pathway event | Uses the ordered event list in the pathway model |
 | `event_time` | Time recorded for that event | ISO 8601 with an explicit offset |
 
@@ -25,6 +28,10 @@ meaning, ownership, terminology, and availability require local review.
 
 The initial values `positive`, `negative`, and `invalid` are simplified synthetic categories. They
 must be replaced by confirmed local source codes and approved mappings before any real-data work.
+
+Every technical assay attempt remains in the run audit. A failed or earlier run is not overwritten
+when a repeat occurs. Exactly one laboratory `result_verified` event selects the run used in the
+specimen timeline; if verification is missing or ambiguous, the pipeline does not guess.
 
 ## Lineage fields
 

@@ -11,7 +11,7 @@ specimen removed
     → specimen sent from theatre
     → specimen received by the laboratory
     → OSNA assay started
-    → OSNA assay completed
+    → OSNA assay completed and, when necessary, repeated
     → result verified under laboratory governance
     → result communicated
     → theatre acknowledgement recorded
@@ -41,15 +41,20 @@ not infer verification merely because an instrument run completed.
 ```text
 Case
  └── Procedure
-      └── Specimen
-           ├── Theatre events
-           ├── Laboratory events
-           ├── Assay run
-           └── Communication events
+      ├── Specimen A
+      │    ├── Theatre and laboratory events
+      │    ├── Assay run 1
+      │    ├── Assay run 2 (optional repeat)
+      │    └── Communication events for the verified run
+      └── Specimen B (optional additional specimen)
 ```
 
 The synthetic prototype links these records with exact fictional identifiers. It does not use
 names, dates of birth, or probabilistic patient matching.
+
+An assay completion is a technical fact, not proof that its result was authorised. The single
+laboratory verification identifies the result-bearing run for the specimen timeline. Earlier,
+failed, or repeated attempts remain visible in the assay-run audit.
 
 ## Known observation and open interpretation
 

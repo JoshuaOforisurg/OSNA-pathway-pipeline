@@ -13,15 +13,16 @@ sentinel lymph nodes in breast cancer surgery. The test is performed in the labo
 surrounding process crosses theatre, specimen transport, the analyser, laboratory systems,
 telephone communication, and the electronic patient record.
 
-This project turns those separate records into one traceable timeline for each OSNA case. The
-pipeline will:
+This project turns those separate records into traceable specimen timelines, assay-run histories,
+and procedure summaries. The pipeline will:
 
 1. receive event extracts from theatre, laboratory, analyser, and communication sources;
 2. standardise them into a common OSNA event model;
 3. safely match events belonging to the same fictional case and specimen;
 4. detect missing, duplicated, contradictory, or incorrectly ordered events;
-5. calculate pathway timings; and
-6. produce case timelines, exception reports, and audit-ready data.
+5. retain failed and repeated analyser runs without confusing them with the verified result;
+6. calculate pathway timings; and
+7. produce specimen timelines, procedure summaries, exception reports, and audit-ready data.
 
 The initial prototype uses synthetic CSV files rather than clinical-system connections. This
 allows the event model and validation rules to be tested without patient data or operational
@@ -37,6 +38,8 @@ such as:
 - How long did the specimen take to reach the laboratory?
 - How long elapsed between receipt, analysis, verification, and communication?
 - Was the verified result acknowledged in theatre?
+- Was an assay repeated, why was it repeated, and which run supplied the verified result?
+- Did every specimen from the procedure complete the recorded pathway?
 - Which cases contain missing or conflicting records?
 - Can the service produce consistent evidence for audit and improvement?
 
@@ -63,15 +66,16 @@ The first runnable version models four deliberately separate source extracts:
 
 ```text
 Theatre events ───────┐
-Laboratory events ────┼─→ validation and matching ─→ OSNA case timeline
-OSNA analyser runs ───┤                              exception report
-Communication events ┘                              pathway metrics
+Laboratory events ────┼─→ validation and matching ─→ specimen timelines
+OSNA analyser runs ───┤                              assay-run audit
+Communication events ┘                              procedure summaries
+                                                     exceptions and metrics
 ```
 
 For each case, it aims to reconstruct:
 
 ```text
-specimen removed → specimen sent → laboratory received → assay run
+specimen removed → specimen sent → laboratory received → one or more assay runs
 → result verified → result communicated → theatre acknowledged
 ```
 
@@ -92,7 +96,9 @@ PYTHONPATH=src python3 -m osna_pipeline \
 The command writes:
 
 - `canonical_events.csv` — standardised events with source lineage;
-- `case_timelines.csv` — one reconstructed row per specimen;
+- `case_timelines.csv` — one reconstructed pathway row per specimen;
+- `assay_runs.csv` — every initial or repeat run, including QC failures and result selection;
+- `procedure_summaries.csv` — specimen and run counts rolled up to each procedure;
 - `exceptions.csv` — missing links, missing events, and sequence problems; and
 - `pipeline_summary.json` — a compact run summary.
 

@@ -2,14 +2,15 @@
 
 ## Goal
 
-Demonstrate with synthetic data that four fragmented OSNA source extracts can be converted into a
-traceable case timeline, an exception report, and a small set of reproducible service metrics.
+Demonstrate with synthetic data that four fragmented OSNA source extracts can be converted into
+traceable specimen timelines, assay-run histories, procedure summaries, an exception report, and
+a small set of reproducible service metrics.
 
 ## Source extracts
 
 - Theatre events: case, procedure, specimen, removal, and dispatch events
 - Laboratory events: specimen receipt and laboratory workflow events
-- OSNA analyser runs: run, QC, completion, result, and verification data
+- OSNA analyser runs: initial and repeat run, QC, completion, and instrument-result data
 - Communication events: result communication and theatre acknowledgement
 
 These are proposed contracts, not representations of any confirmed local system interface.
@@ -22,6 +23,9 @@ These are proposed contracts, not representations of any confirmed local system 
 - Preserve source system and source record identifiers for every event.
 - Quarantine or flag records when a safe link cannot be established.
 - Detect missing events and impossible timestamp sequences.
+- Preserve every assay attempt and validate repeat-run ancestry and QC state.
+- Select a result-bearing run only from one unambiguous laboratory verification.
+- Support multiple specimens within one procedure without collapsing their timelines.
 - Calculate documented transport, laboratory, communication, and total timings.
 - Produce deterministic CSV and JSON outputs.
 - Test successful, incomplete, and contradictory synthetic cases.
@@ -48,8 +52,10 @@ The first prototype is complete when it can:
 3. preserve lineage from each canonical event back to its source row;
 4. report incomplete and incorrectly ordered pathways without guessing;
 5. calculate documented metrics only when their required timestamps exist;
-6. write readable canonical, timeline, exception, and summary outputs; and
-7. pass automated unit and end-to-end tests using only local resources.
+6. distinguish failed, repeated, and laboratory-verified assay runs;
+7. roll multiple specimen pathways up to their procedure without losing detail;
+8. write readable canonical, assay-run, timeline, procedure, exception, and summary outputs; and
+9. pass automated unit and end-to-end tests using only local resources.
 
 ## Evidence required before the next phase
 

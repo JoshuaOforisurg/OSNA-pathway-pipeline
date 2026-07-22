@@ -3,6 +3,8 @@
 The automated tests cover:
 
 - exact identifier matching and rejection of ambiguity;
+- repeat-run relationships, QC failures, and result-code disagreements;
+- multiple specimens within one procedure;
 - duration behaviour for missing or incorrectly ordered timestamps;
 - the complete synthetic end-to-end batch;
 - expected complete, incomplete, invalid, and orphan conditions; and

@@ -12,9 +12,11 @@ laboratory events ──────┼─→ source validation ─→ explicit-
 OSNA analyser runs ─────┤                              ↓
 communication events ──┘                    canonical event stream
                                                      ↓
-                                      sequence and completeness checks
+                               run, sequence, and completeness checks
                                                      ↓
-                                   timelines, exceptions, and metrics
+                              run audit and specimen-level timelines
+                                                     ↓
+                              procedure summaries, exceptions, metrics
 ```
 
 ## Component responsibilities
@@ -23,7 +25,7 @@ communication events ──┘                    canonical event stream
 - **Validation:** check fields, controlled values, timestamps, uniqueness, and relationships.
 - **Matching:** link source events only when the identifier evidence is sufficient.
 - **Canonical model:** represent all accepted events consistently while retaining lineage.
-- **Transformations:** order events and construct a specimen-level pathway timeline.
+- **Transformations:** retain run histories, construct specimen timelines, and aggregate procedures.
 - **Metrics:** calculate documented durations only when both required timestamps are valid.
 - **Exports:** produce analysis and audit outputs without becoming a clinical source of truth.
 

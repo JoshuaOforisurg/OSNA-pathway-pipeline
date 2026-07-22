@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/osna/source/osna-runs/v1",
+  "title": "Synthetic OSNA analyser run",
+  "type": "object",
+  "required": [
+    "source_record_id",
+    "assay_run_id",
+    "specimen_id",
+    "run_started_at",
+    "run_completed_at",
+    "instrument_result_code",
+    "qc_status"
+  ],
+  "properties": {
+    "source_record_id": {"type": "string", "minLength": 1},
+    "assay_run_id": {"type": "string", "pattern": "^RUN-SYN-"},
+    "specimen_id": {"type": "string", "pattern": "^SPEC-SYN-"},
+    "run_started_at": {"type": "string", "format": "date-time"},
+    "run_completed_at": {"type": "string", "format": "date-time"},
+    "instrument_result_code": {"enum": ["positive", "negative", "invalid"]},
+    "qc_status": {"enum": ["pass", "fail"]}
+  },
+  "additionalProperties": false
+}

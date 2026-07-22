@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/osna/source/theatre-events/v1",
+  "title": "Synthetic theatre event",
+  "type": "object",
+  "required": [
+    "source_record_id",
+    "case_id",
+    "procedure_id",
+    "specimen_id",
+    "event_type",
+    "event_time"
+  ],
+  "properties": {
+    "source_record_id": {"type": "string", "minLength": 1},
+    "case_id": {"type": "string", "pattern": "^CASE-SYN-"},
+    "procedure_id": {"type": "string", "pattern": "^PROC-SYN-"},
+    "specimen_id": {"type": "string", "pattern": "^SPEC-SYN-"},
+    "event_type": {"enum": ["specimen_removed", "specimen_sent"]},
+    "event_time": {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties": false
+}

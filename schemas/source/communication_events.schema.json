@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/osna/source/communication-events/v1",
+  "title": "Synthetic result communication event",
+  "type": "object",
+  "required": [
+    "source_record_id",
+    "specimen_id",
+    "assay_run_id",
+    "event_type",
+    "event_time",
+    "channel"
+  ],
+  "properties": {
+    "source_record_id": {"type": "string", "minLength": 1},
+    "specimen_id": {"type": "string", "pattern": "^SPEC-SYN-"},
+    "assay_run_id": {"type": "string", "pattern": "^RUN-SYN-"},
+    "event_type": {"enum": ["result_communicated", "theatre_acknowledged"]},
+    "event_time": {"type": "string", "format": "date-time"},
+    "channel": {"enum": ["telephone", "electronic", "in_person"]}
+  },
+  "additionalProperties": false
+}

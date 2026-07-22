@@ -1,0 +1,8 @@
+source_record_id,specimen_id,assay_run_id,event_type,event_time,result_category
+LAB-001,SPEC-SYN-001,,specimen_received,2026-07-20T09:21:00+01:00,
+LAB-002,SPEC-SYN-001,RUN-SYN-001,result_verified,2026-07-20T09:57:00+01:00,positive
+LAB-003,SPEC-SYN-002,,specimen_received,2026-07-20T10:25:00+01:00,
+LAB-004,SPEC-SYN-002,RUN-SYN-002,result_verified,2026-07-20T11:03:00+01:00,negative
+LAB-005,SPEC-SYN-003,,specimen_received,2026-07-20T11:08:00+01:00,
+LAB-006,SPEC-SYN-003,RUN-SYN-003,result_verified,2026-07-20T11:48:00+01:00,positive
+LAB-007,SPEC-SYN-999,,specimen_received,2026-07-20T12:05:00+01:00,

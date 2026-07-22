@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/osna/canonical/pathway-event/v1",
+  "title": "Canonical OSNA pathway event",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "case_id",
+    "procedure_id",
+    "specimen_id",
+    "event_type",
+    "event_time",
+    "source_system",
+    "source_record_id",
+    "source_field"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "case_id": {"type": "string"},
+    "procedure_id": {"type": "string"},
+    "specimen_id": {"type": "string"},
+    "assay_run_id": {"type": "string"},
+    "event_type": {
+      "enum": [
+        "specimen_removed",
+        "specimen_sent",
+        "specimen_received",
+        "assay_started",
+        "assay_completed",
+        "result_verified",
+        "result_communicated",
+        "theatre_acknowledged"
+      ]
+    },
+    "event_time": {"type": "string", "format": "date-time"},
+    "result_category": {"enum": ["", "positive", "negative", "invalid"]},
+    "instrument_result_code": {"enum": ["", "positive", "negative", "invalid"]},
+    "qc_status": {"enum": ["", "pass", "fail"]},
+    "communication_channel": {"enum": ["", "telephone", "electronic", "in_person"]},
+    "source_system": {"enum": ["theatre", "laboratory", "osna_analyser", "communication"]},
+    "source_record_id": {"type": "string"},
+    "source_field": {"type": "string"}
+  },
+  "additionalProperties": false
+}

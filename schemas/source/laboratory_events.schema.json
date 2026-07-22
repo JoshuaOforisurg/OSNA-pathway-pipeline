@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/osna/source/laboratory-events/v1",
+  "title": "Synthetic laboratory event",
+  "type": "object",
+  "required": [
+    "source_record_id",
+    "specimen_id",
+    "assay_run_id",
+    "event_type",
+    "event_time",
+    "result_category"
+  ],
+  "properties": {
+    "source_record_id": {"type": "string", "minLength": 1},
+    "specimen_id": {"type": "string", "pattern": "^SPEC-SYN-"},
+    "assay_run_id": {"type": "string"},
+    "event_type": {"enum": ["specimen_received", "result_verified"]},
+    "event_time": {"type": "string", "format": "date-time"},
+    "result_category": {"enum": ["", "positive", "negative", "invalid"]}
+  },
+  "additionalProperties": false
+}

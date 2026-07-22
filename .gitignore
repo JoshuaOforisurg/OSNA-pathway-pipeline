@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Generated data and outputs
+data/raw/*
+!data/raw/synthetic/
+!data/raw/synthetic/.gitkeep
+!data/raw/synthetic/*.csv
+data/processed/*
+!data/processed/validated/
+!data/processed/validated/.gitkeep
+!data/processed/curated/
+!data/processed/curated/.gitkeep
+data/outputs/*
+!data/outputs/.gitkeep
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+
+# Infrastructure tooling
+.terraform/
+*.tfstate
+*.tfstate.*

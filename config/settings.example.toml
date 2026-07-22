@@ -1,0 +1,13 @@
+[project]
+environment = "local"
+synthetic_data_only = true
+
+[paths]
+raw = "data/raw/synthetic"
+validated = "data/processed/validated"
+curated = "data/processed/curated"
+outputs = "data/outputs"
+schemas = "schemas"
+
+[logging]
+level = "INFO"

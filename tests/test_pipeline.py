@@ -17,12 +17,16 @@ class PipelineIntegrationTests(unittest.TestCase):
             output_dir = Path(temporary_directory)
             summary = run_pipeline(SYNTHETIC_INPUT, output_dir)
 
-            self.assertEqual(summary["input_record_count"], 21)
-            self.assertEqual(summary["canonical_event_count"], 23)
-            self.assertEqual(summary["specimen_count"], 3)
+            self.assertEqual(summary["input_record_count"], 36)
+            self.assertEqual(summary["canonical_event_count"], 41)
+            self.assertEqual(summary["procedure_count"], 4)
+            self.assertEqual(summary["specimen_count"], 5)
+            self.assertEqual(summary["assay_run_count"], 6)
+            self.assertEqual(summary["repeat_run_count"], 1)
+            self.assertEqual(summary["failed_qc_run_count"], 1)
             self.assertEqual(
                 summary["timeline_status_counts"],
-                {"complete": 1, "incomplete": 1, "invalid": 1},
+                {"complete": 3, "incomplete": 1, "invalid": 1},
             )
             self.assertEqual(
                 summary["exception_counts_by_code"],
@@ -40,6 +44,34 @@ class PipelineIntegrationTests(unittest.TestCase):
             self.assertEqual(timelines["SPEC-SYN-002"]["total_pathway_minutes"], "")
             self.assertEqual(timelines["SPEC-SYN-003"]["pathway_status"], "invalid")
             self.assertEqual(timelines["SPEC-SYN-003"]["transport_minutes"], "")
+            self.assertEqual(timelines["SPEC-SYN-004A"]["pathway_status"], "complete")
+            self.assertEqual(
+                timelines["SPEC-SYN-004A"]["selected_assay_run_id"], "RUN-SYN-004B"
+            )
+            self.assertEqual(timelines["SPEC-SYN-004A"]["assay_run_count"], "2")
+            self.assertEqual(timelines["SPEC-SYN-004A"]["repeat_run_count"], "1")
+            self.assertEqual(timelines["SPEC-SYN-004A"]["failed_qc_run_count"], "1")
+
+            with (output_dir / "assay_runs.csv").open(
+                "r", encoding="utf-8", newline=""
+            ) as handle:
+                assay_runs = {row["assay_run_id"]: row for row in csv.DictReader(handle)}
+
+            self.assertEqual(assay_runs["RUN-SYN-004A"]["run_status"], "qc_failed")
+            self.assertEqual(assay_runs["RUN-SYN-004A"]["selected_for_result"], "false")
+            self.assertEqual(assay_runs["RUN-SYN-004B"]["run_status"], "verified")
+            self.assertEqual(assay_runs["RUN-SYN-004B"]["repeat_reason"], "qc_failure")
+
+            with (output_dir / "procedure_summaries.csv").open(
+                "r", encoding="utf-8", newline=""
+            ) as handle:
+                procedures = {row["procedure_id"]: row for row in csv.DictReader(handle)}
+
+            self.assertEqual(procedures["PROC-SYN-004"]["specimen_count"], "2")
+            self.assertEqual(procedures["PROC-SYN-004"]["assay_run_count"], "3")
+            self.assertEqual(procedures["PROC-SYN-004"]["repeat_run_count"], "1")
+            self.assertEqual(procedures["PROC-SYN-004"]["failed_qc_run_count"], "1")
+            self.assertEqual(procedures["PROC-SYN-004"]["procedure_status"], "complete")
 
             with (output_dir / "canonical_events.csv").open(
                 "r", encoding="utf-8", newline=""
@@ -76,6 +108,8 @@ class PipelineIntegrationTests(unittest.TestCase):
             for filename in (
                 "canonical_events.csv",
                 "case_timelines.csv",
+                "assay_runs.csv",
+                "procedure_summaries.csv",
                 "exceptions.csv",
                 "pipeline_summary.json",
             ):

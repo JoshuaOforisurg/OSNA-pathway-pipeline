@@ -1,7 +1,6 @@
 """OSNA clinical pathway data pipeline."""
 
-__version__ = "0.2.0"
-
 from .pipeline import run_pipeline
+from .version import __version__
 
 __all__ = ["run_pipeline"]

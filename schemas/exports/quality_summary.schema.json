@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/osna/exports/quality-summary-row/v1",
+  "title": "OSNA pipeline quality summary row",
+  "type": "object",
+  "required": [
+    "severity",
+    "issue_code",
+    "source_system",
+    "event_type",
+    "issue_count"
+  ],
+  "properties": {
+    "severity": {"enum": ["error", "warning"]},
+    "issue_code": {"type": "string", "minLength": 1},
+    "source_system": {
+      "enum": ["", "theatre", "laboratory", "osna_analyser", "communication"]
+    },
+    "event_type": {
+      "enum": [
+        "",
+        "specimen_removed",
+        "specimen_sent",
+        "specimen_received",
+        "assay_started",
+        "assay_completed",
+        "result_verified",
+        "result_communicated",
+        "theatre_acknowledged"
+      ]
+    },
+    "issue_count": {"type": "integer", "minimum": 1}
+  },
+  "additionalProperties": false
+}

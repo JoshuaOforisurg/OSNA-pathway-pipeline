@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/osna/exports/metric-summary-row/v1",
+  "title": "OSNA pathway metric summary row",
+  "type": "object",
+  "required": [
+    "metric_name",
+    "unit",
+    "eligible_specimen_count",
+    "observed_value_count",
+    "missing_value_count",
+    "excluded_invalid_specimen_count",
+    "minimum",
+    "median",
+    "p90",
+    "maximum"
+  ],
+  "properties": {
+    "metric_name": {
+      "enum": [
+        "transport_minutes",
+        "assay_minutes",
+        "laboratory_turnaround_minutes",
+        "communication_minutes",
+        "acknowledgement_minutes",
+        "total_pathway_minutes"
+      ]
+    },
+    "unit": {"const": "minutes"},
+    "eligible_specimen_count": {"type": "integer", "minimum": 0},
+    "observed_value_count": {"type": "integer", "minimum": 0},
+    "missing_value_count": {"type": "integer", "minimum": 0},
+    "excluded_invalid_specimen_count": {"type": "integer", "minimum": 0},
+    "minimum": {"type": ["number", "null"], "minimum": 0},
+    "median": {"type": ["number", "null"], "minimum": 0},
+    "p90": {"type": ["number", "null"], "minimum": 0},
+    "maximum": {"type": ["number", "null"], "minimum": 0}
+  },
+  "additionalProperties": false
+}

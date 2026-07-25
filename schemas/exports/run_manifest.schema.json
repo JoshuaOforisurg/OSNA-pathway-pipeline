@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/osna/exports/run-manifest/v1",
+  "title": "OSNA pipeline batch manifest",
+  "type": "object",
+  "required": [
+    "manifest_version",
+    "pipeline_version",
+    "canonical_schema_version",
+    "batch_id",
+    "synthetic_data_only",
+    "quality_status",
+    "input_record_count",
+    "accepted_source_record_count",
+    "source_validation_rejected_record_count",
+    "exception_count",
+    "inputs",
+    "outputs"
+  ],
+  "properties": {
+    "manifest_version": {"const": "1.0.0"},
+    "pipeline_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "canonical_schema_version": {"type": "string"},
+    "batch_id": {"type": "string", "pattern": "^osna-[a-f0-9]{20}$"},
+    "synthetic_data_only": {"const": true},
+    "quality_status": {
+      "enum": ["clean", "warnings_detected", "errors_detected"]
+    },
+    "input_record_count": {"type": "integer", "minimum": 0},
+    "accepted_source_record_count": {"type": "integer", "minimum": 0},
+    "source_validation_rejected_record_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "exception_count": {"type": "integer", "minimum": 0},
+    "inputs": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "required": [
+          "source_system",
+          "filename",
+          "sha256",
+          "record_count",
+          "accepted_record_count",
+          "source_validation_rejected_record_count"
+        ],
+        "properties": {
+          "source_system": {
+            "enum": ["theatre", "laboratory", "osna_analyser", "communication"]
+          },
+          "filename": {"type": "string"},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "record_count": {"type": "integer", "minimum": 0},
+          "accepted_record_count": {"type": "integer", "minimum": 0},
+          "source_validation_rejected_record_count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["filename", "sha256", "record_count"],
+        "properties": {
+          "filename": {
+            "enum": [
+              "assay_runs.csv",
+              "canonical_events.csv",
+              "case_timelines.csv",
+              "exceptions.csv",
+              "metric_summary.csv",
+              "pipeline_summary.json",
+              "procedure_summaries.csv",
+              "quality_summary.csv"
+            ]
+          },
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "record_count": {"type": "integer", "minimum": 0}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

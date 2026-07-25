@@ -16,13 +16,17 @@ from osna_pipeline.domain.models import (
     SCHEMA_VERSION,
     SpecimenContext,
 )
+from osna_pipeline.lineage import build_run_manifest
 from osna_pipeline.matching import build_run_index, build_specimen_index
+from osna_pipeline.metrics import METRIC_SUMMARY_FIELDS, build_metric_summary
 from osna_pipeline.transformations import (
     ASSAY_RUN_FIELDS,
     PROCEDURE_FIELDS,
+    QUALITY_SUMMARY_FIELDS,
     TIMELINE_FIELDS,
     build_assay_run_summaries,
     build_procedure_summaries,
+    build_quality_summary,
     build_timelines,
 )
 
@@ -281,6 +285,12 @@ def _write_csv(path: Path, fieldnames: tuple[str, ...], rows: list[dict[str, str
         writer.writerows(rows)
 
 
+def _write_json(path: Path, value: dict[str, object]) -> None:
+    with path.open("w", encoding="utf-8") as handle:
+        json.dump(value, handle, indent=2, sort_keys=True)
+        handle.write("\n")
+
+
 def _issue_sort_key(issue: QualityIssue) -> tuple[str, ...]:
     return (
         issue.case_id,
@@ -305,14 +315,29 @@ def run_pipeline(input_dir: Path, output_dir: Path) -> dict[str, object]:
     timelines, timeline_issues = build_timelines(contexts, events, invalid_run_ids)
     issues.extend(timeline_issues)
     procedures = build_procedure_summaries(timelines, assay_runs)
+    metric_summary = build_metric_summary(timelines)
     issues.sort(key=_issue_sort_key)
+    quality_summary = build_quality_summary(issues)
 
     status_counts = Counter(row["pathway_status"] for row in timelines)
     issue_counts = Counter(issue.issue_code for issue in issues)
+    severity_counts = Counter(issue.severity for issue in issues)
+    if severity_counts["error"]:
+        quality_status = "errors_detected"
+    elif severity_counts["warning"]:
+        quality_status = "warnings_detected"
+    else:
+        quality_status = "clean"
+    accepted_source_record_count = sum(len(rows) for rows in loaded.rows.values())
     summary: dict[str, object] = {
         "schema_version": SCHEMA_VERSION,
         "synthetic_data_only": True,
+        "quality_status": quality_status,
         "input_record_count": loaded.input_record_count,
+        "accepted_source_record_count": accepted_source_record_count,
+        "source_validation_rejected_record_count": (
+            loaded.input_record_count - accepted_source_record_count
+        ),
         "canonical_event_count": len(events),
         "procedure_count": len(procedures),
         "specimen_count": len(contexts),
@@ -321,16 +346,47 @@ def run_pipeline(input_dir: Path, output_dir: Path) -> dict[str, object]:
         "failed_qc_run_count": sum(row["qc_status"] == "fail" for row in assay_runs),
         "timeline_status_counts": dict(sorted(status_counts.items())),
         "exception_count": len(issues),
+        "exception_counts_by_severity": dict(sorted(severity_counts.items())),
         "exception_counts_by_code": dict(sorted(issue_counts.items())),
     }
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    _write_csv(output_dir / "canonical_events.csv", CANONICAL_FIELDS, [e.to_row() for e in events])
+    canonical_rows = [event.to_row() for event in events]
+    exception_rows = [issue.to_row() for issue in issues]
+    _write_csv(output_dir / "canonical_events.csv", CANONICAL_FIELDS, canonical_rows)
     _write_csv(output_dir / "case_timelines.csv", TIMELINE_FIELDS, timelines)
     _write_csv(output_dir / "assay_runs.csv", ASSAY_RUN_FIELDS, assay_runs)
     _write_csv(output_dir / "procedure_summaries.csv", PROCEDURE_FIELDS, procedures)
-    _write_csv(output_dir / "exceptions.csv", EXCEPTION_FIELDS, [i.to_row() for i in issues])
-    with (output_dir / "pipeline_summary.json").open("w", encoding="utf-8") as handle:
-        json.dump(summary, handle, indent=2, sort_keys=True)
-        handle.write("\n")
+    _write_csv(
+        output_dir / "metric_summary.csv",
+        METRIC_SUMMARY_FIELDS,
+        metric_summary,
+    )
+    _write_csv(output_dir / "exceptions.csv", EXCEPTION_FIELDS, exception_rows)
+    _write_csv(
+        output_dir / "quality_summary.csv",
+        QUALITY_SUMMARY_FIELDS,
+        quality_summary,
+    )
+    _write_json(output_dir / "pipeline_summary.json", summary)
+
+    output_record_counts = {
+        "assay_runs.csv": len(assay_runs),
+        "canonical_events.csv": len(canonical_rows),
+        "case_timelines.csv": len(timelines),
+        "exceptions.csv": len(exception_rows),
+        "metric_summary.csv": len(metric_summary),
+        "pipeline_summary.json": 1,
+        "procedure_summaries.csv": len(procedures),
+        "quality_summary.csv": len(quality_summary),
+    }
+    manifest = build_run_manifest(
+        output_dir,
+        loaded,
+        output_record_counts,
+        canonical_schema_version=SCHEMA_VERSION,
+        quality_status=quality_status,
+        exception_count=len(issues),
+    )
+    _write_json(output_dir / "run_manifest.json", manifest)
     return summary

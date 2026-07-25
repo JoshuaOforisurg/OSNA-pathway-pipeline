@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+from osna_pipeline.checksums import sha256_file
 from osna_pipeline.domain.models import QualityIssue
 
 
@@ -24,6 +25,8 @@ class LoadedSources:
     rows: dict[str, list[dict[str, str]]]
     issues: list[QualityIssue]
     input_record_count: int
+    source_record_counts: dict[str, int]
+    source_file_hashes: dict[str, str]
 
 
 class DataContractError(ValueError):
@@ -216,9 +219,28 @@ def load_sources(input_dir: Path) -> LoadedSources:
     source_rows: dict[str, list[dict[str, str]]] = {}
     all_issues: list[QualityIssue] = []
     total_records = 0
+    source_record_counts: dict[str, int] = {}
+    source_file_hashes: dict[str, str] = {}
     for source_system in CONTRACTS:
+        source_path = input_dir / CONTRACTS[source_system].filename
+        if not source_path.is_file():
+            raise DataContractError(f"Required source file not found: {source_path}")
+        checksum_before_load = sha256_file(source_path)
         rows, issues, count = _load_one(input_dir, source_system)
+        checksum_after_load = sha256_file(source_path)
+        if checksum_before_load != checksum_after_load:
+            raise DataContractError(
+                f"Source file changed while it was being read: {source_path}"
+            )
         source_rows[source_system] = rows
         all_issues.extend(issues)
         total_records += count
-    return LoadedSources(source_rows, all_issues, total_records)
+        source_record_counts[source_system] = count
+        source_file_hashes[source_system] = checksum_before_load
+    return LoadedSources(
+        rows=source_rows,
+        issues=all_issues,
+        input_record_count=total_records,
+        source_record_counts=source_record_counts,
+        source_file_hashes=source_file_hashes,
+    )

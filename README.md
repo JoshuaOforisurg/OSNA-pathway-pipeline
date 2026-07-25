@@ -99,8 +99,33 @@ The command writes:
 - `case_timelines.csv` — one reconstructed pathway row per specimen;
 - `assay_runs.csv` — every initial or repeat run, including QC failures and result selection;
 - `procedure_summaries.csv` — specimen and run counts rolled up to each procedure;
-- `exceptions.csv` — missing links, missing events, and sequence problems; and
-- `pipeline_summary.json` — a compact run summary.
+- `metric_summary.csv` — descriptive timing statistics with missing and exclusion counts;
+- `exceptions.csv` — detailed missing links, missing events, and sequence problems;
+- `quality_summary.csv` — grouped errors and warnings for rapid review;
+- `pipeline_summary.json` — a compact run summary; and
+- `run_manifest.json` — input/output checksums, counts, versions, and a reproducible batch ID.
+
+An `errors_detected` quality status does not mean the program crashed. It means the batch completed
+and produced reviewable exception records. The supplied synthetic batch intentionally includes
+incomplete, contradictory, and orphan scenarios so these controls remain testable.
+
+The timing summary is descriptive only. It excludes invalid specimen pathways, does not convert
+missing values to zero, and contains no invented performance target or clinical threshold.
+
+For an automated job that should return a non-zero status when error-severity findings are
+present, add the optional quality gate:
+
+```bash
+PYTHONPATH=src python3 -m osna_pipeline \
+  --input data/raw/synthetic \
+  --output data/outputs \
+  --fail-on-quality-errors
+```
+
+The pipeline writes the review outputs before returning exit code `2`. The supplied synthetic
+batch intentionally triggers that code. A source-contract failure returns exit code `3` with a
+structured JSON error and does not create analytical outputs. See
+[command-line operation](docs/operations/README.md) for the complete behaviour.
 
 Run the tests with:
 
@@ -118,12 +143,13 @@ PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_*.py'
 │   ├── clinical/           Pathway and data definitions
 │   ├── discovery/          Confirmed observations and open questions
 │   ├── integrations/       Ownership and system boundaries
+│   ├── operations/         Command behaviour and automation boundaries
 │   ├── product/            Vision, scope, and MVP
 │   └── safety/             Clinical-safety boundaries
 ├── schemas/
 │   ├── source/             Contracts for each incoming source
 │   ├── canonical/          Common OSNA pathway event model
-│   └── exports/            Future audit and registry contracts
+│   └── exports/            Local audit and future governed export contracts
 ├── src/osna_pipeline/      Pipeline implementation
 ├── tests/                  Unit and end-to-end tests
 └── infra/azure/            Deferred Azure deployment work
@@ -137,6 +163,7 @@ PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_*.py'
 - [System boundaries](docs/integrations/system-boundaries.md)
 - [Draft OSNA pathway](docs/clinical/osna-pathway.md)
 - [Architecture](docs/architecture/README.md)
+- [Command-line operation](docs/operations/README.md)
 - [Clinical-safety boundaries](docs/safety/README.md)
 
 ## Safety and data governance

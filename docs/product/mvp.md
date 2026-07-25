@@ -27,6 +27,11 @@ These are proposed contracts, not representations of any confirmed local system 
 - Select a result-bearing run only from one unambiguous laboratory verification.
 - Support multiple specimens within one procedure without collapsing their timelines.
 - Calculate documented transport, laboratory, communication, and total timings.
+- Summarise quality findings by type and severity without replacing their detailed records.
+- Produce descriptive timing statistics with explicit missing and invalid-pathway exclusions.
+- Produce a deterministic manifest of the exact input and output files.
+- Expose distinct automation outcomes for completed processing and source-contract failure.
+- Allow an optional error-severity quality gate after review outputs have been written.
 - Produce deterministic CSV and JSON outputs.
 - Test successful, incomplete, and contradictory synthetic cases.
 
@@ -54,8 +59,12 @@ The first prototype is complete when it can:
 5. calculate documented metrics only when their required timestamps exist;
 6. distinguish failed, repeated, and laboratory-verified assay runs;
 7. roll multiple specimen pathways up to their procedure without losing detail;
-8. write readable canonical, assay-run, timeline, procedure, exception, and summary outputs; and
-9. pass automated unit and end-to-end tests using only local resources.
+8. write readable canonical, assay-run, timeline, procedure, exception, and summary outputs;
+9. record input and output checksums, counts, and versions in a deterministic batch manifest;
+10. calculate descriptive timing summaries without including invalid pathways or inventing
+    clinical targets;
+11. write review evidence before applying an optional automation quality gate; and
+12. pass automated unit and end-to-end tests using only local resources.
 
 ## Evidence required before the next phase
 

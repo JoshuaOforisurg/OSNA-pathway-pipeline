@@ -6,6 +6,9 @@ The automated tests cover:
 - repeat-run relationships, QC failures, and result-code disagreements;
 - multiple specimens within one procedure;
 - duration behaviour for missing or incorrectly ordered timestamps;
+- descriptive metric aggregation, missingness, exclusions, and percentile behaviour;
+- batch identity, checksums, source rejection counts, and quality summaries;
+- command-line success, quality-gate, and source-contract failure outcomes;
 - the complete synthetic end-to-end batch;
 - expected complete, incomplete, invalid, and orphan conditions; and
 - deterministic output files.

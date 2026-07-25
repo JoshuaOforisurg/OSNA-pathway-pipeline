@@ -58,6 +58,18 @@ Derived values never overwrite these fields.
 A metric is blank when either timestamp is missing or when its end precedes its start. These are
 descriptive prototype measures, not performance targets.
 
+## Aggregate metric rules
+
+`metric_summary.csv` calculates the minimum, median, linearly interpolated 90th percentile, and
+maximum for each prototype metric.
+
+- Invalid specimen pathways are excluded from every aggregate.
+- Complete and incomplete pathways are eligible.
+- An incomplete pathway contributes only the individual metrics that are present.
+- Missing values are counted and are never converted to zero.
+- Every row reports its eligible, observed, missing, and excluded specimen counts.
+- No target, breach, or clinical threshold is inferred.
+
 ## Missing-data rule
 
 Missing records are reported as missing data. The pipeline must never claim that a clinical event

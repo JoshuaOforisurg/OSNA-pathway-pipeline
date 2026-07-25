@@ -16,7 +16,9 @@ communication events ──┘                    canonical event stream
                                                      ↓
                               run audit and specimen-level timelines
                                                      ↓
-                              procedure summaries, exceptions, metrics
+                      procedure summaries, timing and quality metrics
+                                                     ↓
+                              checksummed batch audit manifest
 ```
 
 ## Component responsibilities
@@ -28,6 +30,8 @@ communication events ──┘                    canonical event stream
 - **Transformations:** retain run histories, construct specimen timelines, and aggregate procedures.
 - **Metrics:** calculate documented durations only when both required timestamps are valid.
 - **Exports:** produce analysis and audit outputs without becoming a clinical source of truth.
+- **Lineage:** identify exact input and output bytes through a deterministic batch manifest.
+- **CLI:** distinguish completed processing, optional quality-gate failure, and contract failure.
 
 ## System ownership
 
@@ -39,6 +43,7 @@ facts received from theatre, laboratory, analyser, communication, EPR, or cancer
 
 - Preserve the source record and never silently rewrite a clinical fact.
 - Make every accepted canonical event traceable to its source system and record identifier.
+- Make each batch reproducible through logical filenames, counts, versions, and checksums.
 - Quarantine or flag ambiguity instead of guessing.
 - Keep source facts, quality findings, and analytical derivations visibly distinct.
 - Calculate metrics only from explicitly defined events.

@@ -6,7 +6,7 @@ Only synthetic data is permitted here during early development.
 - `processed/validated/` will contain schema-valid intermediate records.
 - `processed/curated/` will contain linked pathway tables.
 - `outputs/` will contain generated run audits, specimen timelines, procedure summaries, reports,
-  and metrics.
+  quality summaries, metrics, and deterministic batch manifests.
 
 Generated outputs are ignored by default. The supplied synthetic CSV files are versionable test
 inputs and must use only the visibly fictional `*-SYN-*` identifiers.

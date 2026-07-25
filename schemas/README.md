@@ -4,7 +4,7 @@ The prototype separates contracts by responsibility:
 
 - `source/` describes the fictional extracts received from each source.
 - `canonical/` describes the common event produced by the pipeline.
-- `exports/` reserves governed contracts for audit, registry, and other consumers.
+- `exports/` describes local audit outputs and reserves space for governed external contracts.
 
 The JSON Schema files document the intended structure. The dependency-free prototype also
 enforces the essential required-field, timestamp, controlled-value, uniqueness, and relationship

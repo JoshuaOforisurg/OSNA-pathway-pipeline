@@ -23,7 +23,12 @@ validated health IT system, or approved component of an intraoperative pathway.
 - Failure to distinguish a repeat assay from a separate specimen
 - Stale information appearing current
 - Derived metrics being mistaken for clinical facts
+- A technical quality-gate exit code being mistaken for a clinical decision
 - Inappropriate inclusion of identifiable patient data
+
+The optional command-line quality gate is solely for automation and review workflow. It does not
+validate or authorise a clinical result and must not delay, replace, or control the
+laboratory-to-surgeon communication pathway.
 
 ## Safety work before real-world use
 

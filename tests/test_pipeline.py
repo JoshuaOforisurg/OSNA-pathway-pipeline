@@ -1,4 +1,5 @@
 import csv
+import hashlib
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -24,6 +25,13 @@ class PipelineIntegrationTests(unittest.TestCase):
             self.assertEqual(summary["assay_run_count"], 6)
             self.assertEqual(summary["repeat_run_count"], 1)
             self.assertEqual(summary["failed_qc_run_count"], 1)
+            self.assertEqual(summary["accepted_source_record_count"], 36)
+            self.assertEqual(summary["source_validation_rejected_record_count"], 0)
+            self.assertEqual(summary["quality_status"], "errors_detected")
+            self.assertEqual(
+                summary["exception_counts_by_severity"],
+                {"error": 2, "warning": 1},
+            )
             self.assertEqual(
                 summary["timeline_status_counts"],
                 {"complete": 3, "incomplete": 1, "invalid": 1},
@@ -100,6 +108,78 @@ class PipelineIntegrationTests(unittest.TestCase):
                 written_summary = json.load(handle)
             self.assertEqual(written_summary, summary)
 
+            with (output_dir / "quality_summary.csv").open(
+                "r", encoding="utf-8", newline=""
+            ) as handle:
+                quality_rows = {
+                    row["issue_code"]: row for row in csv.DictReader(handle)
+                }
+            self.assertEqual(quality_rows["INVALID_SEQUENCE"]["severity"], "error")
+            self.assertEqual(quality_rows["ORPHAN_SPECIMEN"]["source_system"], "laboratory")
+            self.assertEqual(quality_rows["MISSING_EVENT"]["severity"], "warning")
+
+            with (output_dir / "metric_summary.csv").open(
+                "r", encoding="utf-8", newline=""
+            ) as handle:
+                metric_rows = {
+                    row["metric_name"]: row for row in csv.DictReader(handle)
+                }
+            self.assertEqual(metric_rows["transport_minutes"]["observed_value_count"], "4")
+            self.assertEqual(metric_rows["transport_minutes"]["median"], "9.0")
+            self.assertEqual(metric_rows["transport_minutes"]["p90"], "13.2")
+            self.assertEqual(
+                metric_rows["total_pathway_minutes"]["observed_value_count"],
+                "3",
+            )
+            self.assertEqual(
+                metric_rows["total_pathway_minutes"]["missing_value_count"],
+                "1",
+            )
+            self.assertEqual(metric_rows["total_pathway_minutes"]["p90"], "72.4")
+            for row in metric_rows.values():
+                self.assertEqual(row["excluded_invalid_specimen_count"], "1")
+
+            with (output_dir / "run_manifest.json").open("r", encoding="utf-8") as handle:
+                manifest = json.load(handle)
+
+            self.assertEqual(manifest["manifest_version"], "1.0.0")
+            self.assertEqual(manifest["pipeline_version"], "0.3.0")
+            self.assertEqual(manifest["canonical_schema_version"], "1.1.0")
+            self.assertEqual(manifest["quality_status"], "errors_detected")
+            self.assertEqual(manifest["input_record_count"], 36)
+            self.assertEqual(manifest["accepted_source_record_count"], 36)
+            self.assertEqual(
+                manifest["source_validation_rejected_record_count"],
+                0,
+            )
+            self.assertTrue(manifest["batch_id"].startswith("osna-"))
+            self.assertEqual(len(manifest["inputs"]), 4)
+            for item in manifest["inputs"]:
+                input_path = SYNTHETIC_INPUT / item["filename"]
+                self.assertEqual(
+                    item["sha256"],
+                    hashlib.sha256(input_path.read_bytes()).hexdigest(),
+                )
+            self.assertEqual(
+                {item["filename"] for item in manifest["outputs"]},
+                {
+                    "assay_runs.csv",
+                    "canonical_events.csv",
+                    "case_timelines.csv",
+                    "exceptions.csv",
+                    "metric_summary.csv",
+                    "pipeline_summary.json",
+                    "procedure_summaries.csv",
+                    "quality_summary.csv",
+                },
+            )
+            for item in manifest["outputs"]:
+                output_path = output_dir / item["filename"]
+                self.assertEqual(
+                    item["sha256"],
+                    hashlib.sha256(output_path.read_bytes()).hexdigest(),
+                )
+
     def test_same_input_produces_identical_files(self):
         with TemporaryDirectory() as first, TemporaryDirectory() as second:
             run_pipeline(SYNTHETIC_INPUT, Path(first))
@@ -111,7 +191,10 @@ class PipelineIntegrationTests(unittest.TestCase):
                 "assay_runs.csv",
                 "procedure_summaries.csv",
                 "exceptions.csv",
+                "metric_summary.csv",
+                "quality_summary.csv",
                 "pipeline_summary.json",
+                "run_manifest.json",
             ):
                 self.assertEqual(
                     (Path(first) / filename).read_bytes(),

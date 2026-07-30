@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/osna/config/source-mapping/v1",
+  "title": "OSNA event-shaped source mapping",
+  "type": "object",
+  "required": ["mapping_version", "data_classification", "sources"],
+  "properties": {
+    "mapping_version": {"const": "1.0.0"},
+    "data_classification": {
+      "enum": ["synthetic", "governed_clinical"]
+    },
+    "sources": {
+      "type": "object",
+      "required": [
+        "theatre",
+        "laboratory",
+        "osna_analyser",
+        "communication"
+      ],
+      "properties": {
+        "theatre": {"$ref": "#/$defs/source"},
+        "laboratory": {"$ref": "#/$defs/source"},
+        "osna_analyser": {"$ref": "#/$defs/source"},
+        "communication": {"$ref": "#/$defs/source"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": ["filename", "columns", "value_mappings"],
+      "properties": {
+        "filename": {
+          "type": "string",
+          "minLength": 5,
+          "pattern": "^[^/\\\\]+\\.[cC][sS][vV]$"
+        },
+        "columns": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^\\S(?:.*\\S)?$"
+          }
+        },
+        "value_mappings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

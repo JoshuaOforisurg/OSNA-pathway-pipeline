@@ -16,6 +16,8 @@ venv/
 .env
 .env.*
 !.env.example
+config/local/
+config/*.local.json
 
 # Generated data and outputs
 data/raw/*

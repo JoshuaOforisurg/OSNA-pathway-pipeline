@@ -1,0 +1,58 @@
+{
+  "mapping_version": "1.0.0",
+  "data_classification": "synthetic",
+  "sources": {
+    "theatre": {
+      "filename": "theatre_events.csv",
+      "columns": {
+        "source_record_id": "source_record_id",
+        "case_id": "case_id",
+        "procedure_id": "procedure_id",
+        "specimen_id": "specimen_id",
+        "event_type": "event_type",
+        "event_time": "event_time"
+      },
+      "value_mappings": {}
+    },
+    "laboratory": {
+      "filename": "laboratory_events.csv",
+      "columns": {
+        "source_record_id": "source_record_id",
+        "specimen_id": "specimen_id",
+        "assay_run_id": "assay_run_id",
+        "event_type": "event_type",
+        "event_time": "event_time",
+        "result_category": "result_category"
+      },
+      "value_mappings": {}
+    },
+    "osna_analyser": {
+      "filename": "osna_runs.csv",
+      "columns": {
+        "source_record_id": "source_record_id",
+        "assay_run_id": "assay_run_id",
+        "specimen_id": "specimen_id",
+        "run_sequence": "run_sequence",
+        "repeat_of_run_id": "repeat_of_run_id",
+        "repeat_reason": "repeat_reason",
+        "run_started_at": "run_started_at",
+        "run_completed_at": "run_completed_at",
+        "instrument_result_code": "instrument_result_code",
+        "qc_status": "qc_status"
+      },
+      "value_mappings": {}
+    },
+    "communication": {
+      "filename": "communication_events.csv",
+      "columns": {
+        "source_record_id": "source_record_id",
+        "specimen_id": "specimen_id",
+        "assay_run_id": "assay_run_id",
+        "event_type": "event_type",
+        "event_time": "event_time",
+        "channel": "channel"
+      },
+      "value_mappings": {}
+    }
+  }
+}

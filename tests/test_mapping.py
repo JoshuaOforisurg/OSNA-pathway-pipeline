@@ -142,8 +142,15 @@ class SourceMappingTests(unittest.TestCase):
             mapping_path = root / "renamed_mapping.json"
             write_mapping(mapping_path, mapping_document)
             output_dir = root / "output"
+            readiness = validate_source_files(copied_input, mapping_path)
             summary = run_pipeline(copied_input, output_dir, mapping_path)
 
+            self.assertEqual(
+                readiness["source_counts"]["theatre"]["field_readiness"][
+                    "event_type"
+                ]["source_column"],
+                "event_code",
+            )
             self.assertEqual(summary["canonical_event_count"], 41)
             with (output_dir / "run_manifest.json").open(
                 "r", encoding="utf-8"

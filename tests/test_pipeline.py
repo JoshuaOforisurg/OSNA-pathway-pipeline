@@ -143,7 +143,7 @@ class PipelineIntegrationTests(unittest.TestCase):
                 manifest = json.load(handle)
 
             self.assertEqual(manifest["manifest_version"], "1.1.0")
-            self.assertEqual(manifest["pipeline_version"], "0.4.0")
+            self.assertEqual(manifest["pipeline_version"], "0.5.0")
             self.assertEqual(manifest["canonical_schema_version"], "1.1.0")
             self.assertEqual(
                 manifest["source_mapping"],

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -27,6 +28,36 @@ class SourceContract:
 
 
 @dataclass(frozen=True)
+class RowValidationFinding:
+    """One field-level validation failure without retaining its source value."""
+
+    field_name: str
+    rule_code: str
+    message: str
+
+
+@dataclass(frozen=True)
+class SourceFieldReadiness:
+    """Aggregate completeness and rule findings for one mapped canonical field."""
+
+    source_column: str
+    requirement: str
+    record_count: int
+    populated_value_count: int
+    finding_counts: dict[str, int]
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "source_column": self.source_column,
+            "requirement": self.requirement,
+            "record_count": self.record_count,
+            "populated_value_count": self.populated_value_count,
+            "missing_value_count": self.record_count - self.populated_value_count,
+            "finding_counts": dict(sorted(self.finding_counts.items())),
+        }
+
+
+@dataclass(frozen=True)
 class LoadedSources:
     rows: dict[str, list[dict[str, str]]]
     issues: list[QualityIssue]
@@ -38,10 +69,19 @@ class LoadedSources:
     mapping_filename: str
     mapping_sha256: str
     data_classification: str
+    source_field_readiness: dict[str, dict[str, SourceFieldReadiness]]
 
 
 class DataContractError(ValueError):
     """Raised when a required source file or header contract is unavailable."""
+
+
+class TimestampValidationError(ValueError):
+    """A timestamp failure carrying its stable aggregate reporting code."""
+
+    def __init__(self, message: str, rule_code: str) -> None:
+        super().__init__(message)
+        self.rule_code = rule_code
 
 
 CONTRACTS = {
@@ -124,25 +164,43 @@ def parse_timestamp(value: str, field_name: str) -> datetime:
     try:
         parsed = datetime.fromisoformat(value)
     except ValueError as exc:
-        raise ValueError(f"{field_name} is not a valid ISO 8601 timestamp") from exc
+        raise TimestampValidationError(
+            f"{field_name} is not a valid ISO 8601 timestamp",
+            "INVALID_TIMESTAMP",
+        ) from exc
     if parsed.utcoffset() is None:
-        raise ValueError(f"{field_name} must include a time-zone offset")
+        raise TimestampValidationError(
+            f"{field_name} must include a time-zone offset",
+            "TIMEZONE_OFFSET_MISSING",
+        )
     return parsed
 
 
 def _validate_row(
     row: dict[str, str],
     contract: SourceContract,
-) -> list[str]:
-    errors: list[str] = []
+) -> list[RowValidationFinding]:
+    findings: list[RowValidationFinding] = []
     for field in contract.required_fields:
         if field not in contract.optional_value_fields and not row.get(field, "").strip():
-            errors.append(f"{field} is required")
+            findings.append(
+                RowValidationFinding(
+                    field_name=field,
+                    rule_code="REQUIRED_VALUE_MISSING",
+                    message=f"{field} is required",
+                )
+            )
 
     if contract.filename == "laboratory_events.csv" and row.get("event_type") == "result_verified":
         for field in ("assay_run_id", "result_category"):
             if not row.get(field, "").strip():
-                errors.append(f"{field} is required for result_verified")
+                findings.append(
+                    RowValidationFinding(
+                        field_name=field,
+                        rule_code="CONDITIONAL_VALUE_MISSING",
+                        message=f"{field} is required for result_verified",
+                    )
+                )
 
     if contract.filename == "osna_runs.csv":
         sequence_value = row.get("run_sequence", "")
@@ -151,31 +209,83 @@ def _validate_row(
             if run_sequence < 1:
                 raise ValueError
         except ValueError:
-            errors.append("run_sequence must be a positive integer")
+            findings.append(
+                RowValidationFinding(
+                    field_name="run_sequence",
+                    rule_code="INVALID_POSITIVE_INTEGER",
+                    message="run_sequence must be a positive integer",
+                )
+            )
         else:
             repeat_of_run_id = row.get("repeat_of_run_id", "")
             repeat_reason = row.get("repeat_reason", "")
-            if run_sequence == 1 and (repeat_of_run_id or repeat_reason):
-                errors.append("initial runs must not contain repeat metadata")
+            if run_sequence == 1 and repeat_of_run_id:
+                findings.append(
+                    RowValidationFinding(
+                        field_name="repeat_of_run_id",
+                        rule_code="INITIAL_RUN_REPEAT_METADATA",
+                        message="repeat_of_run_id must be empty for initial runs",
+                    )
+                )
+            if run_sequence == 1 and repeat_reason:
+                findings.append(
+                    RowValidationFinding(
+                        field_name="repeat_reason",
+                        rule_code="INITIAL_RUN_REPEAT_METADATA",
+                        message="repeat_reason must be empty for initial runs",
+                    )
+                )
             if run_sequence > 1:
                 if not repeat_of_run_id:
-                    errors.append("repeat_of_run_id is required for repeat runs")
+                    findings.append(
+                        RowValidationFinding(
+                            field_name="repeat_of_run_id",
+                            rule_code="CONDITIONAL_VALUE_MISSING",
+                            message="repeat_of_run_id is required for repeat runs",
+                        )
+                    )
                 if not repeat_reason:
-                    errors.append("repeat_reason is required for repeat runs")
+                    findings.append(
+                        RowValidationFinding(
+                            field_name="repeat_reason",
+                            rule_code="CONDITIONAL_VALUE_MISSING",
+                            message="repeat_reason is required for repeat runs",
+                        )
+                    )
 
     for field in contract.timestamp_fields:
         value = row.get(field, "").strip()
         if value:
             try:
                 parse_timestamp(value, field)
-            except ValueError as exc:
-                errors.append(str(exc))
+            except TimestampValidationError as exc:
+                findings.append(
+                    RowValidationFinding(
+                        field_name=field,
+                        rule_code=exc.rule_code,
+                        message=str(exc),
+                    )
+                )
 
     for field, allowed_values in contract.controlled_fields.items():
         value = row.get(field, "").strip()
         if value and value not in allowed_values:
-            errors.append(f"{field} has unsupported value {value!r}")
-    return errors
+            findings.append(
+                RowValidationFinding(
+                    field_name=field,
+                    rule_code="UNSUPPORTED_CONTROLLED_VALUE",
+                    message=f"{field} has unsupported value {value!r}",
+                )
+            )
+    return findings
+
+
+def _field_requirement(contract: SourceContract, field_name: str) -> str:
+    return (
+        "conditional"
+        if field_name in contract.optional_value_fields
+        else "required"
+    )
 
 
 def _mapping_for_source(
@@ -246,7 +356,12 @@ def _load_one(
     input_dir: Path,
     source_system: str,
     source_mapping: SourceFileMapping,
-) -> tuple[list[dict[str, str]], list[QualityIssue], int]:
+) -> tuple[
+    list[dict[str, str]],
+    list[QualityIssue],
+    int,
+    dict[str, SourceFieldReadiness],
+]:
     contract = CONTRACTS[source_system]
     path = _source_path(input_dir, source_mapping.filename)
 
@@ -254,6 +369,10 @@ def _load_one(
     issues: list[QualityIssue] = []
     seen_record_ids: set[str] = set()
     record_count = 0
+    populated_counts: Counter[str] = Counter()
+    finding_counts: dict[str, Counter[str]] = {
+        field: Counter() for field in contract.required_fields
+    }
 
     with path.open("r", encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
@@ -288,18 +407,34 @@ def _load_one(
             for field, field_mapping in source_mapping.value_mappings.items():
                 if row[field] in field_mapping:
                     row[field] = field_mapping[row[field]]
+            for field in contract.required_fields:
+                if row[field]:
+                    populated_counts[field] += 1
             record_id = row.get("source_record_id", "")
-            errors = _validate_row(row, contract)
+            findings = _validate_row(row, contract)
             if record_id and record_id in seen_record_ids:
-                errors.append("source_record_id is duplicated within this source")
+                findings.append(
+                    RowValidationFinding(
+                        field_name="source_record_id",
+                        rule_code="DUPLICATE_SOURCE_RECORD_ID",
+                        message=(
+                            "source_record_id is duplicated within this source"
+                        ),
+                    )
+                )
             if record_id:
                 seen_record_ids.add(record_id)
-            if errors:
+            for finding in findings:
+                finding_counts[finding.field_name][finding.rule_code] += 1
+            if findings:
                 issues.append(
                     QualityIssue(
                         issue_code="SOURCE_VALIDATION_ERROR",
                         severity="error",
-                        details=f"Row {row_number}: {'; '.join(errors)}",
+                        details=(
+                            f"Row {row_number}: "
+                            f"{'; '.join(finding.message for finding in findings)}"
+                        ),
                         specimen_id=row.get("specimen_id", ""),
                         source_system=source_system,
                         source_record_id=record_id,
@@ -309,7 +444,17 @@ def _load_one(
                 continue
             valid_rows.append(row)
 
-    return valid_rows, issues, record_count
+    field_readiness = {
+        field: SourceFieldReadiness(
+            source_column=source_mapping.columns[field],
+            requirement=_field_requirement(contract, field),
+            record_count=record_count,
+            populated_value_count=populated_counts[field],
+            finding_counts=dict(finding_counts[field]),
+        )
+        for field in contract.required_fields
+    }
+    return valid_rows, issues, record_count, field_readiness
 
 
 def load_sources(
@@ -325,11 +470,12 @@ def load_sources(
     source_record_counts: dict[str, int] = {}
     source_file_hashes: dict[str, str] = {}
     source_filenames: dict[str, str] = {}
+    source_field_readiness: dict[str, dict[str, SourceFieldReadiness]] = {}
     for source_system, contract in CONTRACTS.items():
         source_mapping = _mapping_for_source(source_system, contract, mapping)
         source_path = _source_path(input_dir, source_mapping.filename)
         checksum_before_load = sha256_file(source_path)
-        rows, issues, count = _load_one(
+        rows, issues, count, field_readiness = _load_one(
             input_dir,
             source_system,
             source_mapping,
@@ -345,6 +491,7 @@ def load_sources(
         source_record_counts[source_system] = count
         source_file_hashes[source_system] = checksum_before_load
         source_filenames[source_system] = source_mapping.filename
+        source_field_readiness[source_system] = field_readiness
     return LoadedSources(
         rows=source_rows,
         issues=all_issues,
@@ -358,4 +505,5 @@ def load_sources(
         data_classification=(
             mapping.data_classification if mapping else "synthetic"
         ),
+        source_field_readiness=source_field_readiness,
     )

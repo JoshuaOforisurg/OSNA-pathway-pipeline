@@ -25,6 +25,7 @@ from osna_pipeline.domain.models import (
 from osna_pipeline.lineage import build_run_manifest
 from osna_pipeline.matching import build_run_index, build_specimen_index
 from osna_pipeline.metrics import METRIC_SUMMARY_FIELDS, build_metric_summary
+from osna_pipeline.readiness import build_source_readiness_report
 from osna_pipeline.transformations import (
     ASSAY_RUN_FIELDS,
     PROCEDURE_FIELDS,
@@ -333,39 +334,7 @@ def validate_source_files(
     """Validate source contracts without linking events or writing outputs."""
 
     loaded, _ = _load_with_mapping(Path(input_dir), mapping_path)
-    issues = sorted(loaded.issues, key=_issue_sort_key)
-    quality_status, severity_counts = _quality_status(issues)
-    issue_counts = Counter(issue.issue_code for issue in issues)
-    source_counts = {
-        source_system: {
-            "filename": loaded.source_filenames[source_system],
-            "record_count": loaded.source_record_counts[source_system],
-            "accepted_record_count": len(loaded.rows[source_system]),
-            "rejected_record_count": (
-                loaded.source_record_counts[source_system]
-                - len(loaded.rows[source_system])
-            ),
-        }
-        for source_system in loaded.rows
-    }
-    accepted_record_count = sum(len(rows) for rows in loaded.rows.values())
-    return {
-        "mode": "validate_only",
-        "mapping_version": loaded.mapping_version,
-        "mapping_filename": loaded.mapping_filename,
-        "mapping_sha256": loaded.mapping_sha256,
-        "data_classification": loaded.data_classification,
-        "quality_status": quality_status,
-        "input_record_count": loaded.input_record_count,
-        "accepted_source_record_count": accepted_record_count,
-        "source_validation_rejected_record_count": (
-            loaded.input_record_count - accepted_record_count
-        ),
-        "exception_count": len(issues),
-        "exception_counts_by_severity": dict(sorted(severity_counts.items())),
-        "exception_counts_by_code": dict(sorted(issue_counts.items())),
-        "source_counts": source_counts,
-    }
+    return build_source_readiness_report(loaded)
 
 
 def run_pipeline(

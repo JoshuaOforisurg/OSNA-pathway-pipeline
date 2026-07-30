@@ -45,8 +45,8 @@ def main(argv: list[str] | None = None) -> int:
         "--validate-only",
         action="store_true",
         help=(
-            "Validate mapped source files and print aggregate findings without "
-            "linking pathways or writing outputs."
+            "Print an aggregate mapped-source readiness report without linking "
+            "pathways, exposing row values, or writing outputs."
         ),
     )
     parser.add_argument(

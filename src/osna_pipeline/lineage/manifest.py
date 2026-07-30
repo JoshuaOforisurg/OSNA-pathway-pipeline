@@ -6,24 +6,25 @@ import hashlib
 from pathlib import Path
 
 from osna_pipeline.checksums import sha256_file
-from osna_pipeline.connectors.csv_sources import CONTRACTS, LoadedSources
+from osna_pipeline.connectors.csv_sources import LoadedSources
+from osna_pipeline.connectors.mapping import SOURCE_SYSTEMS
 from osna_pipeline.version import __version__
 
 
-MANIFEST_VERSION = "1.0.0"
+MANIFEST_VERSION = "1.1.0"
 
 
 def _input_inventory(
     loaded: LoadedSources,
 ) -> list[dict[str, object]]:
     inventory: list[dict[str, object]] = []
-    for source_system, contract in CONTRACTS.items():
+    for source_system in SOURCE_SYSTEMS:
         record_count = loaded.source_record_counts[source_system]
         accepted_record_count = len(loaded.rows[source_system])
         inventory.append(
             {
                 "source_system": source_system,
-                "filename": contract.filename,
+                "filename": loaded.source_filenames[source_system],
                 "sha256": loaded.source_file_hashes[source_system],
                 "record_count": record_count,
                 "accepted_record_count": accepted_record_count,
@@ -35,8 +36,19 @@ def _input_inventory(
     return inventory
 
 
-def _batch_id(inputs: list[dict[str, object]]) -> str:
+def _batch_id(
+    inputs: list[dict[str, object]],
+    loaded: LoadedSources,
+) -> str:
     digest = hashlib.sha256()
+    for mapping_value in (
+        loaded.mapping_version,
+        loaded.mapping_filename,
+        loaded.mapping_sha256,
+        loaded.data_classification,
+    ):
+        digest.update(mapping_value.encode("utf-8"))
+        digest.update(b"\0")
     for item in inputs:
         digest.update(str(item["source_system"]).encode("utf-8"))
         digest.update(b"\0")
@@ -78,8 +90,14 @@ def build_run_manifest(
         "manifest_version": MANIFEST_VERSION,
         "pipeline_version": __version__,
         "canonical_schema_version": canonical_schema_version,
-        "batch_id": _batch_id(inputs),
+        "batch_id": _batch_id(inputs, loaded),
         "synthetic_data_only": True,
+        "source_mapping": {
+            "mapping_version": loaded.mapping_version,
+            "data_classification": loaded.data_classification,
+            "filename": loaded.mapping_filename,
+            "sha256": loaded.mapping_sha256,
+        },
         "quality_status": quality_status,
         "input_record_count": loaded.input_record_count,
         "accepted_source_record_count": accepted_source_record_count,

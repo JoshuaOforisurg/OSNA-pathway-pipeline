@@ -7,8 +7,8 @@ import json
 import sys
 from pathlib import Path
 
-from osna_pipeline.connectors import DataContractError
-from osna_pipeline.pipeline import run_pipeline
+from osna_pipeline.connectors import DataContractError, MappingConfigError
+from osna_pipeline.pipeline import run_pipeline, validate_source_files
 
 
 EXIT_SUCCESS = 0
@@ -21,36 +21,56 @@ def main(argv: list[str] | None = None) -> int:
 
     parser = argparse.ArgumentParser(
         description=(
-            "Build synthetic OSNA timelines, timing and quality summaries, and audit manifests."
+            "Validate event-shaped OSNA extracts or build synthetic pathway outputs."
         )
     )
     parser.add_argument(
         "--input",
         type=Path,
         default=Path("data/raw/synthetic"),
-        help="Directory containing the four required synthetic CSV extracts.",
+        help="Directory containing the four required event-shaped CSV extracts.",
     )
     parser.add_argument(
         "--output",
         type=Path,
         default=Path("data/outputs"),
-        help="Directory for generated CSV and JSON outputs.",
+        help="Directory for full-run outputs; ignored by --validate-only.",
+    )
+    parser.add_argument(
+        "--mapping",
+        type=Path,
+        help="Optional JSON file mapping source filenames, columns, and controlled values.",
+    )
+    parser.add_argument(
+        "--validate-only",
+        action="store_true",
+        help=(
+            "Validate mapped source files and print aggregate findings without "
+            "linking pathways or writing outputs."
+        ),
     )
     parser.add_argument(
         "--fail-on-quality-errors",
         action="store_true",
         help=(
-            "Write all outputs, then return exit code 2 when error-severity "
-            "quality findings are present."
+            "Return exit code 2 when the selected mode completes with "
+            "error-severity quality findings."
         ),
     )
     args = parser.parse_args(argv)
     try:
-        summary = run_pipeline(args.input, args.output)
-    except DataContractError as exc:
+        if args.validate_only:
+            summary = validate_source_files(args.input, args.mapping)
+        else:
+            summary = run_pipeline(args.input, args.output, args.mapping)
+    except (DataContractError, MappingConfigError) as exc:
         error = {
             "status": "failed",
-            "error_code": "DATA_CONTRACT_ERROR",
+            "error_code": (
+                "MAPPING_CONFIG_ERROR"
+                if isinstance(exc, MappingConfigError)
+                else "DATA_CONTRACT_ERROR"
+            ),
             "message": str(exc),
         }
         print(json.dumps(error, indent=2, sort_keys=True), file=sys.stderr)

@@ -2,7 +2,9 @@
 
 The local `run_manifest.json` contract describes the exact source files and analytical outputs in
 one synthetic batch. It records logical filenames, record counts, SHA-256 checksums, the pipeline
-version, the canonical schema version, and a deterministic batch identifier.
+version, the canonical schema version, the source-mapping version and checksum, and a deterministic
+batch identifier. Blank mapping filename and checksum values mean the built-in identity mapping
+was used.
 
 The manifest is a reproducibility and technical-audit record. It is not a clinical result report,
 does not prove that a real-world event occurred, and deliberately contains no wall-clock execution

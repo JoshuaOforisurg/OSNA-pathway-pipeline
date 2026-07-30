@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.invalid/osna/exports/run-manifest/v1",
+  "$id": "https://example.invalid/osna/exports/run-manifest/v1.1",
   "title": "OSNA pipeline batch manifest",
   "type": "object",
   "required": [
@@ -9,6 +9,7 @@
     "canonical_schema_version",
     "batch_id",
     "synthetic_data_only",
+    "source_mapping",
     "quality_status",
     "input_record_count",
     "accepted_source_record_count",
@@ -18,11 +19,49 @@
     "outputs"
   ],
   "properties": {
-    "manifest_version": {"const": "1.0.0"},
+    "manifest_version": {"const": "1.1.0"},
     "pipeline_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
     "canonical_schema_version": {"type": "string"},
     "batch_id": {"type": "string", "pattern": "^osna-[a-f0-9]{20}$"},
     "synthetic_data_only": {"const": true},
+    "source_mapping": {
+      "type": "object",
+      "required": [
+        "mapping_version",
+        "data_classification",
+        "filename",
+        "sha256"
+      ],
+      "properties": {
+        "mapping_version": {"const": "1.0.0"},
+        "data_classification": {"const": "synthetic"},
+        "filename": {
+          "type": "string",
+          "pattern": "^$|^[^/\\\\]+\\.json$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^$|^[a-f0-9]{64}$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"filename": {"const": ""}},
+            "required": ["filename"]
+          },
+          "then": {
+            "properties": {"sha256": {"const": ""}}
+          },
+          "else": {
+            "properties": {
+              "sha256": {"pattern": "^[a-f0-9]{64}$"}
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
     "quality_status": {
       "enum": ["clean", "warnings_detected", "errors_detected"]
     },

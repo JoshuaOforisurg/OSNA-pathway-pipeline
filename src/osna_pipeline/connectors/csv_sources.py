@@ -1,4 +1,4 @@
-"""Read and validate the four synthetic CSV source extracts."""
+"""Read, map, and validate the four event-shaped CSV source extracts."""
 
 from __future__ import annotations
 
@@ -8,6 +8,12 @@ from datetime import datetime
 from pathlib import Path
 
 from osna_pipeline.checksums import sha256_file
+from osna_pipeline.connectors.mapping import (
+    MAPPING_VERSION,
+    MappingConfigError,
+    SourceFileMapping,
+    SourceMapping,
+)
 from osna_pipeline.domain.models import QualityIssue
 
 
@@ -27,6 +33,11 @@ class LoadedSources:
     input_record_count: int
     source_record_counts: dict[str, int]
     source_file_hashes: dict[str, str]
+    source_filenames: dict[str, str]
+    mapping_version: str
+    mapping_filename: str
+    mapping_sha256: str
+    data_classification: str
 
 
 class DataContractError(ValueError):
@@ -167,11 +178,77 @@ def _validate_row(
     return errors
 
 
-def _load_one(input_dir: Path, source_system: str) -> tuple[list[dict[str, str]], list[QualityIssue], int]:
-    contract = CONTRACTS[source_system]
-    path = input_dir / contract.filename
+def _mapping_for_source(
+    source_system: str,
+    contract: SourceContract,
+    mapping: SourceMapping | None,
+) -> SourceFileMapping:
+    if mapping is None:
+        return SourceFileMapping(
+            filename=contract.filename,
+            columns={field: field for field in contract.required_fields},
+            value_mappings={},
+        )
+
+    source_mapping = mapping.sources[source_system]
+    required_fields = set(contract.required_fields)
+    mapped_fields = set(source_mapping.columns)
+    missing_fields = sorted(required_fields - mapped_fields)
+    unexpected_fields = sorted(mapped_fields - required_fields)
+    if missing_fields:
+        raise MappingConfigError(
+            f"{source_system}.columns is missing canonical fields: "
+            f"{', '.join(missing_fields)}"
+        )
+    if unexpected_fields:
+        raise MappingConfigError(
+            f"{source_system}.columns contains unsupported canonical fields: "
+            f"{', '.join(unexpected_fields)}"
+        )
+
+    unsupported_value_fields = sorted(
+        set(source_mapping.value_mappings) - set(contract.controlled_fields)
+    )
+    if unsupported_value_fields:
+        raise MappingConfigError(
+            f"{source_system}.value_mappings may only target controlled fields; "
+            f"unsupported: {', '.join(unsupported_value_fields)}"
+        )
+    for field, field_mapping in source_mapping.value_mappings.items():
+        allowed_values = contract.controlled_fields[field]
+        invalid_targets = sorted(
+            {
+                canonical_value
+                for canonical_value in field_mapping.values()
+                if canonical_value and canonical_value not in allowed_values
+            }
+        )
+        if invalid_targets:
+            raise MappingConfigError(
+                f"{source_system}.value_mappings.{field} contains unsupported "
+                f"canonical values: {', '.join(invalid_targets)}"
+            )
+    return source_mapping
+
+
+def _source_path(input_dir: Path, filename: str) -> Path:
+    path = input_dir / filename
     if not path.is_file():
         raise DataContractError(f"Required source file not found: {path}")
+    if path.resolve().parent != input_dir.resolve():
+        raise DataContractError(
+            f"Required source file resolves outside the input directory: {path}"
+        )
+    return path
+
+
+def _load_one(
+    input_dir: Path,
+    source_system: str,
+    source_mapping: SourceFileMapping,
+) -> tuple[list[dict[str, str]], list[QualityIssue], int]:
+    contract = CONTRACTS[source_system]
+    path = _source_path(input_dir, source_mapping.filename)
 
     valid_rows: list[dict[str, str]] = []
     issues: list[QualityIssue] = []
@@ -181,19 +258,42 @@ def _load_one(input_dir: Path, source_system: str) -> tuple[list[dict[str, str]]
     with path.open("r", encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
         headers = tuple(reader.fieldnames or ())
-        missing_headers = [field for field in contract.required_fields if field not in headers]
+        duplicate_headers = sorted(
+            {header for header in headers if headers.count(header) > 1}
+        )
+        if duplicate_headers:
+            raise DataContractError(
+                f"{source_mapping.filename} contains duplicate columns: "
+                f"{', '.join(duplicate_headers)}"
+            )
+        missing_headers = [
+            source_mapping.columns[field]
+            for field in contract.required_fields
+            if source_mapping.columns[field] not in headers
+        ]
         if missing_headers:
             raise DataContractError(
-                f"{contract.filename} is missing required columns: {', '.join(missing_headers)}"
+                f"{source_mapping.filename} is missing mapped source columns: "
+                f"{', '.join(missing_headers)}"
             )
 
         for row_number, original_row in enumerate(reader, start=2):
             record_count += 1
-            row = {key: (value or "").strip() for key, value in original_row.items()}
+            row = {
+                canonical_field: (
+                    original_row.get(source_column) or ""
+                ).strip()
+                for canonical_field, source_column in source_mapping.columns.items()
+            }
+            for field, field_mapping in source_mapping.value_mappings.items():
+                if row[field] in field_mapping:
+                    row[field] = field_mapping[row[field]]
             record_id = row.get("source_record_id", "")
             errors = _validate_row(row, contract)
             if record_id and record_id in seen_record_ids:
                 errors.append("source_record_id is duplicated within this source")
+            if record_id:
+                seen_record_ids.add(record_id)
             if errors:
                 issues.append(
                     QualityIssue(
@@ -207,26 +307,33 @@ def _load_one(input_dir: Path, source_system: str) -> tuple[list[dict[str, str]]
                     )
                 )
                 continue
-            seen_record_ids.add(record_id)
             valid_rows.append(row)
 
     return valid_rows, issues, record_count
 
 
-def load_sources(input_dir: Path) -> LoadedSources:
+def load_sources(
+    input_dir: Path,
+    mapping: SourceMapping | None = None,
+) -> LoadedSources:
     """Load all required extracts, quarantining invalid rows as quality issues."""
 
+    input_dir = Path(input_dir)
     source_rows: dict[str, list[dict[str, str]]] = {}
     all_issues: list[QualityIssue] = []
     total_records = 0
     source_record_counts: dict[str, int] = {}
     source_file_hashes: dict[str, str] = {}
-    for source_system in CONTRACTS:
-        source_path = input_dir / CONTRACTS[source_system].filename
-        if not source_path.is_file():
-            raise DataContractError(f"Required source file not found: {source_path}")
+    source_filenames: dict[str, str] = {}
+    for source_system, contract in CONTRACTS.items():
+        source_mapping = _mapping_for_source(source_system, contract, mapping)
+        source_path = _source_path(input_dir, source_mapping.filename)
         checksum_before_load = sha256_file(source_path)
-        rows, issues, count = _load_one(input_dir, source_system)
+        rows, issues, count = _load_one(
+            input_dir,
+            source_system,
+            source_mapping,
+        )
         checksum_after_load = sha256_file(source_path)
         if checksum_before_load != checksum_after_load:
             raise DataContractError(
@@ -237,10 +344,18 @@ def load_sources(input_dir: Path) -> LoadedSources:
         total_records += count
         source_record_counts[source_system] = count
         source_file_hashes[source_system] = checksum_before_load
+        source_filenames[source_system] = source_mapping.filename
     return LoadedSources(
         rows=source_rows,
         issues=all_issues,
         input_record_count=total_records,
         source_record_counts=source_record_counts,
         source_file_hashes=source_file_hashes,
+        source_filenames=source_filenames,
+        mapping_version=mapping.mapping_version if mapping else MAPPING_VERSION,
+        mapping_filename=mapping.filename if mapping else "",
+        mapping_sha256=mapping.sha256 if mapping else "",
+        data_classification=(
+            mapping.data_classification if mapping else "synthetic"
+        ),
     )

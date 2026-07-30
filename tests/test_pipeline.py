@@ -142,9 +142,18 @@ class PipelineIntegrationTests(unittest.TestCase):
             with (output_dir / "run_manifest.json").open("r", encoding="utf-8") as handle:
                 manifest = json.load(handle)
 
-            self.assertEqual(manifest["manifest_version"], "1.0.0")
-            self.assertEqual(manifest["pipeline_version"], "0.3.0")
+            self.assertEqual(manifest["manifest_version"], "1.1.0")
+            self.assertEqual(manifest["pipeline_version"], "0.4.0")
             self.assertEqual(manifest["canonical_schema_version"], "1.1.0")
+            self.assertEqual(
+                manifest["source_mapping"],
+                {
+                    "mapping_version": "1.0.0",
+                    "data_classification": "synthetic",
+                    "filename": "",
+                    "sha256": "",
+                },
+            )
             self.assertEqual(manifest["quality_status"], "errors_detected")
             self.assertEqual(manifest["input_record_count"], 36)
             self.assertEqual(manifest["accepted_source_record_count"], 36)

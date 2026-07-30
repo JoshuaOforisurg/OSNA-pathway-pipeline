@@ -7,7 +7,13 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from osna_pipeline.connectors.csv_sources import LoadedSources, load_sources, parse_timestamp
+from osna_pipeline.connectors.csv_sources import (
+    DataContractError,
+    LoadedSources,
+    load_sources,
+    parse_timestamp,
+)
+from osna_pipeline.connectors.mapping import SourceMapping, load_source_mapping
 from osna_pipeline.domain.models import (
     CANONICAL_FIELDS,
     EXCEPTION_FIELDS,
@@ -303,12 +309,81 @@ def _issue_sort_key(issue: QualityIssue) -> tuple[str, ...]:
     )
 
 
-def run_pipeline(input_dir: Path, output_dir: Path) -> dict[str, object]:
+def _quality_status(issues: list[QualityIssue]) -> tuple[str, Counter[str]]:
+    severity_counts = Counter(issue.severity for issue in issues)
+    if severity_counts["error"]:
+        return "errors_detected", severity_counts
+    if severity_counts["warning"]:
+        return "warnings_detected", severity_counts
+    return "clean", severity_counts
+
+
+def _load_with_mapping(
+    input_dir: Path,
+    mapping_path: Path | None,
+) -> tuple[LoadedSources, SourceMapping | None]:
+    mapping = load_source_mapping(mapping_path) if mapping_path else None
+    return load_sources(Path(input_dir), mapping), mapping
+
+
+def validate_source_files(
+    input_dir: Path,
+    mapping_path: Path | None = None,
+) -> dict[str, object]:
+    """Validate source contracts without linking events or writing outputs."""
+
+    loaded, _ = _load_with_mapping(Path(input_dir), mapping_path)
+    issues = sorted(loaded.issues, key=_issue_sort_key)
+    quality_status, severity_counts = _quality_status(issues)
+    issue_counts = Counter(issue.issue_code for issue in issues)
+    source_counts = {
+        source_system: {
+            "filename": loaded.source_filenames[source_system],
+            "record_count": loaded.source_record_counts[source_system],
+            "accepted_record_count": len(loaded.rows[source_system]),
+            "rejected_record_count": (
+                loaded.source_record_counts[source_system]
+                - len(loaded.rows[source_system])
+            ),
+        }
+        for source_system in loaded.rows
+    }
+    accepted_record_count = sum(len(rows) for rows in loaded.rows.values())
+    return {
+        "mode": "validate_only",
+        "mapping_version": loaded.mapping_version,
+        "mapping_filename": loaded.mapping_filename,
+        "mapping_sha256": loaded.mapping_sha256,
+        "data_classification": loaded.data_classification,
+        "quality_status": quality_status,
+        "input_record_count": loaded.input_record_count,
+        "accepted_source_record_count": accepted_record_count,
+        "source_validation_rejected_record_count": (
+            loaded.input_record_count - accepted_record_count
+        ),
+        "exception_count": len(issues),
+        "exception_counts_by_severity": dict(sorted(severity_counts.items())),
+        "exception_counts_by_code": dict(sorted(issue_counts.items())),
+        "source_counts": source_counts,
+    }
+
+
+def run_pipeline(
+    input_dir: Path,
+    output_dir: Path,
+    mapping_path: Path | None = None,
+) -> dict[str, object]:
     """Run the local prototype and write deterministic analytical outputs."""
 
     input_dir = Path(input_dir)
     output_dir = Path(output_dir)
-    loaded = load_sources(input_dir)
+    mapping = load_source_mapping(mapping_path) if mapping_path else None
+    if mapping and mapping.data_classification != "synthetic":
+        raise DataContractError(
+            "Full pathway processing remains synthetic-only; use --validate-only "
+            "for a governed clinical extract"
+        )
+    loaded = load_sources(input_dir, mapping)
     events, contexts, issues = canonicalise_sources(loaded)
     assay_runs, assay_run_issues, invalid_run_ids = build_assay_run_summaries(events)
     issues.extend(assay_run_issues)
@@ -321,17 +396,15 @@ def run_pipeline(input_dir: Path, output_dir: Path) -> dict[str, object]:
 
     status_counts = Counter(row["pathway_status"] for row in timelines)
     issue_counts = Counter(issue.issue_code for issue in issues)
-    severity_counts = Counter(issue.severity for issue in issues)
-    if severity_counts["error"]:
-        quality_status = "errors_detected"
-    elif severity_counts["warning"]:
-        quality_status = "warnings_detected"
-    else:
-        quality_status = "clean"
+    quality_status, severity_counts = _quality_status(issues)
     accepted_source_record_count = sum(len(rows) for rows in loaded.rows.values())
     summary: dict[str, object] = {
         "schema_version": SCHEMA_VERSION,
         "synthetic_data_only": True,
+        "mapping_version": loaded.mapping_version,
+        "mapping_filename": loaded.mapping_filename,
+        "mapping_sha256": loaded.mapping_sha256,
+        "data_classification": loaded.data_classification,
         "quality_status": quality_status,
         "input_record_count": loaded.input_record_count,
         "accepted_source_record_count": accepted_source_record_count,

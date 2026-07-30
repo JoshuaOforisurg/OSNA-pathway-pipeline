@@ -5,7 +5,8 @@ The prototype separates contracts by responsibility:
 - `config/` describes the source-mapping configuration.
 - `source/` describes the fictional extracts received from each source.
 - `canonical/` describes the common event produced by the pipeline.
-- `exports/` describes local audit outputs and reserves space for governed external contracts.
+- `exports/` describes local audit outputs, the validation-only readiness report, and future
+  governed external contracts.
 
 The JSON Schema files document the intended structure. The dependency-free prototype also
 enforces the essential required-field, timestamp, controlled-value, uniqueness, and relationship

@@ -32,3 +32,9 @@ values as zero.
 Formal registry, COSD mapping, or other external clinical contracts will be added only after the
 receiving use case, information standard, lawful basis, field ownership, and governance are
 confirmed.
+
+The `source_readiness_report.schema.json` contract describes the JSON printed by validation-only
+mode. It records mapping identity, source acceptance counts, and per-field completeness and rule
+findings. It contains no row identifiers or source values and is not written automatically. Its
+filenames, column metadata, and unsuppressed aggregate counts must still be handled within the
+approved environment.

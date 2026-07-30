@@ -103,3 +103,7 @@ Before requesting records, agree:
 
 The output of discovery is a locally approved mapping and extract specification—not clinical data
 in this repository.
+
+After approval, the validation-only readiness report can quantify completeness and rule failures
+for the proposed fields. Keep that report in the governed environment: although it contains no row
+identifiers or source values, its column metadata and unsuppressed counts may still be sensitive.

@@ -41,7 +41,7 @@ It must not contain:
 - checks required mapped headers;
 - validates row-level required values, controlled codes, and timestamp format;
 - ignores columns that are not explicitly selected by the mapping;
-- prints aggregate counts and issue categories;
+- prints aggregate field-completeness counts and validation-rule categories;
 - does not link specimens, reconstruct pathways, calculate timings, or write analytical files.
 
 This technical restriction does not grant permission to use clinical data. Validation must still
@@ -49,6 +49,10 @@ run inside the approved environment, and terminal output must be handled under l
 The classification is supplied by the operator; it does not inspect the extract and cannot prove
 that data labelled `synthetic` is genuinely synthetic. A governed extract must always use a
 mapping explicitly declared `governed_clinical`.
+
+The report does not print row identifiers or source values. It does include filenames, mapped
+column names, and unsuppressed aggregate counts. Those details may still disclose internal system
+structure or small cohorts and must be stored, transferred, and disclosed only under local policy.
 
 ## Gate before analytical processing
 

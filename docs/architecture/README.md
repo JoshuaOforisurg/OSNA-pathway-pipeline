@@ -29,6 +29,7 @@ communication events ──┘                    canonical event stream
 - **Connectors:** read a named source contract without changing its clinical meaning.
 - **Mapping:** rename event-shaped columns and translate explicitly documented controlled codes.
 - **Validation:** check fields, controlled values, timestamps, uniqueness, and relationships.
+- **Readiness reporting:** aggregate field completeness and rule failures without row values.
 - **Matching:** link source events only when the identifier evidence is sufficient.
 - **Canonical model:** represent all accepted events consistently while retaining lineage.
 - **Transformations:** retain run histories, construct specimen timelines, and aggregate procedures.

@@ -10,6 +10,7 @@ The automated tests cover:
 - batch identity, checksums, source rejection counts, and quality summaries;
 - command-line success, quality-gate, and source-contract failure outcomes;
 - mapped filenames, renamed columns, controlled-code translation, and validation-only safety;
+- aggregate source-readiness reporting without row identifiers or source values;
 - the complete synthetic end-to-end batch;
 - expected complete, incomplete, invalid, and orphan conditions; and
 - deterministic output files.

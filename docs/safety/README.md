@@ -35,6 +35,8 @@ laboratory-to-surgeon communication pathway.
 Mappings declared `governed_clinical` are restricted to validation-only mode. The mode reports
 aggregate structural findings and creates no pathway outputs. This restriction neither confirms
 the mapping's clinical meaning nor grants permission to access or process clinical data.
+The readiness report excludes row identifiers and source values but includes internal column
+metadata and unsuppressed counts, which must still be treated as potentially sensitive.
 
 ## Safety work before real-world use
 

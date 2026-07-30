@@ -19,7 +19,8 @@ These are proposed contracts, not representations of any confirmed local system 
 
 - Check required fields, identifiers, timestamp format, and controlled values.
 - Map explicitly documented event-shaped filenames, columns, and controlled codes.
-- Validate source extracts without linking pathways or writing analytical outputs.
+- Validate source extracts and report aggregate field readiness without exposing row values,
+  linking pathways, or writing analytical outputs.
 - Standardise source rows into a versioned canonical event model.
 - Match only on explicit synthetic identifiers in the first version.
 - Preserve source system and source record identifiers for every event.
@@ -69,7 +70,9 @@ The first prototype is complete when it can:
 11. write review evidence before applying an optional automation quality gate;
 12. validate a mapped source batch without constructing clinical pathways or outputs;
 13. record the exact synthetic mapping version and checksum in the batch manifest; and
-14. pass automated unit and end-to-end tests using only local resources.
+14. produce a schema-defined readiness report containing field completeness and validation-rule
+    counts without row identifiers or source values; and
+15. pass automated unit and end-to-end tests using only local resources.
 
 ## Evidence required before the next phase
 

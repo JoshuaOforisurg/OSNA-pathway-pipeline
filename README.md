@@ -115,8 +115,9 @@ missing values to zero, and contains no invented performance target or clinical 
 
 ## Validate a mapped extract
 
-The validation-only workflow checks source structure and row-level values without matching
-specimens, reconstructing pathways, calculating metrics, or writing analytical outputs:
+The validation-only workflow prints a versioned source-readiness report without matching
+specimens, reconstructing pathways, calculating metrics, exposing row values, or writing
+analytical outputs:
 
 ```bash
 PYTHONPATH=src python3 -m osna_pipeline \
@@ -129,6 +130,10 @@ Mapping version `1.0.0` supports event-shaped CSV files with different filenames
 and controlled source codes. It does not infer events from wide reports or free text. The supplied
 mapping is fictional and synthetic; hospital-specific mappings and extracts must remain in an
 approved private environment.
+
+For each mapped field, the report records its source column, requirement type, populated and
+missing counts, and aggregate validation-rule failures. It includes no row identifiers or source
+values. Aggregate counts can still be sensitive and must remain in the approved environment.
 
 For an automated job that should return a non-zero status when error-severity findings are
 present, add the optional quality gate:

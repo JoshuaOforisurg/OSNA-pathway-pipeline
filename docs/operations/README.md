@@ -49,14 +49,34 @@ PYTHONPATH=src python3 -m osna_pipeline \
   --validate-only
 ```
 
-Validation-only reads all four mapped sources and prints aggregate source-level counts plus the
-mapping version, filename, checksum, and declared data classification. It checks:
+Validation-only reads all four mapped sources and prints source-readiness report version `1.0.0`.
+The report includes source-level accepted and rejected counts, the mapping identity, and these
+aggregate measures for every mapped canonical field:
+
+- its mapped source-column name;
+- whether its value is always required or conditionally required;
+- populated and missing value counts; and
+- validation-finding counts grouped by rule.
+
+The validation rules cover:
 
 - mapped filenames and required headers;
 - required row values;
 - ISO 8601 timestamps with explicit offsets;
 - controlled values after configured translations; and
 - duplicate source-record identifiers.
+
+The report declares that it contains no row identifiers or source values and that its counts are
+not suppressed. Its structure is defined by
+[`source_readiness_report.schema.json`](../../schemas/exports/source_readiness_report.schema.json).
+Filename and source-column metadata remain visible. Aggregate and small-number counts may still be
+sensitive, so terminal output must remain inside the approved environment.
+
+Missing counts do not automatically mean errors. For example, an assay-run identifier is
+conditionally required for `result_verified` but may legitimately be blank for
+`specimen_received`. The field's `finding_counts` distinguish a rule failure from an expected
+blank. `exception_count` counts rejected source rows, while `validation_finding_count` counts
+individual field-rule failures; one rejected row can therefore contribute several findings.
 
 It does not perform cross-source matching, so a source-valid orphan record or an invalid
 cross-source timeline will not appear until full synthetic processing. The `--output` argument is

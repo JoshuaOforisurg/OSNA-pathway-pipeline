@@ -20,6 +20,7 @@ Write a deterministic `run_manifest.json` containing:
 - logical input and output filenames;
 - SHA-256 checksums and record counts;
 - accepted and source-validation-rejected input counts;
+- the exact source-mapping version, filename, checksum, and declared data classification;
 - pipeline, manifest, and canonical schema versions; and
 - the overall data-quality status and exception count.
 

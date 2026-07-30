@@ -18,6 +18,8 @@ These are proposed contracts, not representations of any confirmed local system 
 ## Required behaviour
 
 - Check required fields, identifiers, timestamp format, and controlled values.
+- Map explicitly documented event-shaped filenames, columns, and controlled codes.
+- Validate source extracts without linking pathways or writing analytical outputs.
 - Standardise source rows into a versioned canonical event model.
 - Match only on explicit synthetic identifiers in the first version.
 - Preserve source system and source record identifiers for every event.
@@ -47,6 +49,7 @@ These are proposed contracts, not representations of any confirmed local system 
 - Live operational dashboard or full-stack application
 - Production Azure deployment
 - Other surgical specialties
+- Inferred mapping of wide reports, free text, or undocumented local timestamps
 
 ## Acceptance criteria
 
@@ -63,8 +66,10 @@ The first prototype is complete when it can:
 9. record input and output checksums, counts, and versions in a deterministic batch manifest;
 10. calculate descriptive timing summaries without including invalid pathways or inventing
     clinical targets;
-11. write review evidence before applying an optional automation quality gate; and
-12. pass automated unit and end-to-end tests using only local resources.
+11. write review evidence before applying an optional automation quality gate;
+12. validate a mapped source batch without constructing clinical pathways or outputs;
+13. record the exact synthetic mapping version and checksum in the batch manifest; and
+14. pass automated unit and end-to-end tests using only local resources.
 
 ## Evidence required before the next phase
 

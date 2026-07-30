@@ -4,7 +4,8 @@
 pathway between breast surgery and the molecular laboratory.**
 
 > **Project status:** Early technical prototype. It is not validated, deployed, or approved for
-> clinical use. Only deliberately generated synthetic data is permitted.
+> clinical use. Full pathway processing is restricted to deliberately generated synthetic data.
+> Approved clinical extracts may only use the validation-only path inside a governed environment.
 
 ## What this project does
 
@@ -112,6 +113,23 @@ incomplete, contradictory, and orphan scenarios so these controls remain testabl
 The timing summary is descriptive only. It excludes invalid specimen pathways, does not convert
 missing values to zero, and contains no invented performance target or clinical threshold.
 
+## Validate a mapped extract
+
+The validation-only workflow checks source structure and row-level values without matching
+specimens, reconstructing pathways, calculating metrics, or writing analytical outputs:
+
+```bash
+PYTHONPATH=src python3 -m osna_pipeline \
+  --input data/raw/synthetic \
+  --mapping config/source_mapping.example.json \
+  --validate-only
+```
+
+Mapping version `1.0.0` supports event-shaped CSV files with different filenames, column headers,
+and controlled source codes. It does not infer events from wide reports or free text. The supplied
+mapping is fictional and synthetic; hospital-specific mappings and extracts must remain in an
+approved private environment.
+
 For an automated job that should return a non-zero status when error-severity findings are
 present, add the optional quality gate:
 
@@ -137,16 +155,19 @@ PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_*.py'
 
 ```text
 .
+├── config/                 Synthetic mapping example; local mappings are ignored
 ├── data/                   Synthetic inputs and generated local outputs
 ├── docs/
 │   ├── architecture/       System design and architecture decisions
 │   ├── clinical/           Pathway and data definitions
 │   ├── discovery/          Confirmed observations and open questions
+│   ├── governance/         Retrospective data-readiness boundary
 │   ├── integrations/       Ownership and system boundaries
 │   ├── operations/         Command behaviour and automation boundaries
 │   ├── product/            Vision, scope, and MVP
 │   └── safety/             Clinical-safety boundaries
 ├── schemas/
+│   ├── config/             Source-mapping configuration contract
 │   ├── source/             Contracts for each incoming source
 │   ├── canonical/          Common OSNA pathway event model
 │   └── exports/            Local audit and future governed export contracts
@@ -160,8 +181,11 @@ PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_*.py'
 - [Product vision](docs/product/vision.md)
 - [Minimum viable product](docs/product/mvp.md)
 - [Current workflow discovery](docs/discovery/current-state.md)
+- [Source-field discovery pack](docs/discovery/source-field-mapping.md)
 - [System boundaries](docs/integrations/system-boundaries.md)
 - [Draft OSNA pathway](docs/clinical/osna-pathway.md)
+- [Retrospective evaluation protocol](docs/product/retrospective-evaluation-protocol.md)
+- [Retrospective data-readiness gate](docs/governance/README.md)
 - [Architecture](docs/architecture/README.md)
 - [Command-line operation](docs/operations/README.md)
 - [Clinical-safety boundaries](docs/safety/README.md)
@@ -172,18 +196,20 @@ Identifiable or pseudonymised patient information must not be added to this repo
 outputs must not be used for diagnosis, treatment, intraoperative decisions, or as the
 authoritative source of an OSNA result.
 
-Any future use with clinical data would require local workflow validation, information
-governance, security assurance, clinical risk management, human-factors work, and assessment
-against applicable NHS and medical-device requirements.
+Any validation of clinical data or future analytical use would require local workflow validation,
+information governance, security assurance, clinical risk management, human-factors work, and
+assessment against applicable NHS and medical-device requirements.
 
 ## Roadmap
 
 1. Prove the event model using representative synthetic cases and failure scenarios.
-2. Validate the proposed source fields with theatre, laboratory, pathology IT, and cancer teams.
-3. Replace assumptions with documented local system contracts and ownership.
-4. Evaluate retrospective approved exports before any live integration.
-5. Add a minimal status or exception view only if user discovery demonstrates a need.
-6. Consider an approved Azure architecture after the workflow and product value are established.
+2. Complete the source-field discovery pack with theatre, laboratory, pathology IT, and cancer
+   teams.
+3. Replace the fictional example mapping with a locally approved private mapping.
+4. Validate an approved retrospective extract inside the governed organisational environment.
+5. Obtain explicit approval before enabling full retrospective pathway processing.
+6. Add a minimal status or exception view only if user discovery demonstrates a need.
+7. Consider an approved Azure architecture after the workflow and product value are established.
 
 ## Licence
 

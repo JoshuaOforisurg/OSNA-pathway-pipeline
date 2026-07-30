@@ -6,7 +6,9 @@ work, integration assumptions, and architecture decisions that guide implementat
 - `product/` explains the problem, vision, scope, and first deliverable.
 - `clinical/` describes the pathway and the meaning of the data.
 - `discovery/` separates observed local practice from unanswered questions.
+- `governance/` defines the gate before any retrospective clinical-data work.
 - `integrations/` records source ownership and system boundaries.
+- `operations/` documents command behaviour and automation outcomes.
 - `safety/` records boundaries, hazards, and future assurance work.
 - `architecture/` explains the system shape and why technical decisions were made.
 

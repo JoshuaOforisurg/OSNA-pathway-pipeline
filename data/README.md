@@ -12,3 +12,5 @@ Generated outputs are ignored by default. The supplied synthetic CSV files are v
 inputs and must use only the visibly fictional `*-SYN-*` identifiers.
 
 Never add identifiable or pseudonymised patient data to this directory or repository.
+Approved clinical extracts must remain in the organisation's governed environment and outside this
+public working tree, including when using validation-only mode.

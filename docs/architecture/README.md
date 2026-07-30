@@ -2,12 +2,15 @@
 
 ## Prototype context
 
-The first implementation is a local, batch-oriented pipeline operating only on synthetic CSV
-files. Each file represents a different source system so that integration problems are visible
-rather than hidden inside one convenient dataset.
+The first analytical implementation is a local, batch-oriented pipeline operating only on
+synthetic CSV files. A separate validation-only path can inspect an approved mapped extract inside
+a governed environment without linking pathways or writing outputs. Each file represents a
+different source system so that integration problems are visible rather than hidden inside one
+convenient dataset.
 
 ```text
-theatre events ─────────┐
+source mapping ─────────┐
+theatre events ─────────┤
 laboratory events ──────┼─→ source validation ─→ explicit-ID matching
 OSNA analyser runs ─────┤                              ↓
 communication events ──┘                    canonical event stream
@@ -24,6 +27,7 @@ communication events ──┘                    canonical event stream
 ## Component responsibilities
 
 - **Connectors:** read a named source contract without changing its clinical meaning.
+- **Mapping:** rename event-shaped columns and translate explicitly documented controlled codes.
 - **Validation:** check fields, controlled values, timestamps, uniqueness, and relationships.
 - **Matching:** link source events only when the identifier evidence is sufficient.
 - **Canonical model:** represent all accepted events consistently while retaining lineage.
@@ -46,6 +50,7 @@ facts received from theatre, laboratory, analyser, communication, EPR, or cancer
 - Make each batch reproducible through logical filenames, counts, versions, and checksums.
 - Quarantine or flag ambiguity instead of guessing.
 - Keep source facts, quality findings, and analytical derivations visibly distinct.
+- Do not infer mappings, codes, identifiers, or timestamp meanings.
 - Calculate metrics only from explicitly defined events.
 - Treat absence of a record as missing data, not proof that the real-world event did not happen.
 - Keep the core pipeline independent of Azure so it is reproducible and testable locally.

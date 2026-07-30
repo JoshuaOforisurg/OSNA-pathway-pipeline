@@ -7,7 +7,8 @@ validated health IT system, or approved component of an intraoperative pathway.
 
 ## Current restrictions
 
-- Synthetic data only.
+- Full pathway processing and analytical outputs use synthetic data only.
+- Clinical extracts are limited to approved, governed, validation-only work.
 - No connection to clinical systems or devices.
 - No use during patient care.
 - No diagnosis, prognosis, or treatment recommendation.
@@ -24,11 +25,16 @@ validated health IT system, or approved component of an intraoperative pathway.
 - Stale information appearing current
 - Derived metrics being mistaken for clinical facts
 - A technical quality-gate exit code being mistaken for a clinical decision
+- Incorrect local column or code mapping creating a false canonical event
 - Inappropriate inclusion of identifiable patient data
 
 The optional command-line quality gate is solely for automation and review workflow. It does not
 validate or authorise a clinical result and must not delay, replace, or control the
 laboratory-to-surgeon communication pathway.
+
+Mappings declared `governed_clinical` are restricted to validation-only mode. The mode reports
+aggregate structural findings and creates no pathway outputs. This restriction neither confirms
+the mapping's clinical meaning nor grants permission to access or process clinical data.
 
 ## Safety work before real-world use
 

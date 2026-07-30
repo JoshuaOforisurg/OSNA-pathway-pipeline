@@ -4,9 +4,9 @@ The local command separates three outcomes that an automated runner must not con
 
 | Exit code | Meaning | Outputs |
 | --- | --- | --- |
-| `0` | Processing completed under the selected quality policy | All outputs written |
-| `2` | Processing completed, but `--fail-on-quality-errors` found error-severity issues | All outputs written for review |
-| `3` | A required source file or header contract prevented processing | Structured error on standard error; no analytical outputs |
+| `0` | Full processing or validation-only completed under the selected quality policy | Full mode writes all outputs; validation-only writes none |
+| `2` | The selected mode completed, but `--fail-on-quality-errors` found error-severity issues | Full mode writes review outputs; validation-only writes none |
+| `3` | An invalid mapping or required source contract prevented processing | Structured error on standard error; no analytical outputs |
 
 Unexpected software or environment failures are not converted into data-quality findings. They
 retain a normal Python failure and non-zero process status so the underlying defect remains
@@ -40,6 +40,31 @@ This is a technical automation policy, not a clinical threshold. It must not con
 authorise an OSNA result, replace telephone communication, or be presented as evidence that a
 real-world event did or did not occur.
 
+## Mapping and validation-only mode
+
+```bash
+PYTHONPATH=src python3 -m osna_pipeline \
+  --input data/raw/synthetic \
+  --mapping config/source_mapping.example.json \
+  --validate-only
+```
+
+Validation-only reads all four mapped sources and prints aggregate source-level counts plus the
+mapping version, filename, checksum, and declared data classification. It checks:
+
+- mapped filenames and required headers;
+- required row values;
+- ISO 8601 timestamps with explicit offsets;
+- controlled values after configured translations; and
+- duplicate source-record identifiers.
+
+It does not perform cross-source matching, so a source-valid orphan record or an invalid
+cross-source timeline will not appear until full synthetic processing. The `--output` argument is
+ignored and no output directory is created.
+
+Mappings declared `governed_clinical` are restricted to validation-only. This restriction is a
+technical safety boundary, not evidence of information-governance approval.
+
 ## Source-contract failure
 
 A missing required source file or required CSV header returns structured JSON on standard error:
@@ -55,3 +80,5 @@ A missing required source file or required CSV header returns structured JSON on
 The pipeline does not create its output directory for this failure. Row-level validation problems
 are different: valid rows continue through processing, rejected rows are counted, and the
 resulting findings remain visible in the exception, quality, summary, and manifest outputs.
+
+An invalid mapping returns the same exit code with `MAPPING_CONFIG_ERROR`.

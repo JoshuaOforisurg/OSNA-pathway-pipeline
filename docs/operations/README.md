@@ -102,3 +102,16 @@ are different: valid rows continue through processing, rejected rows are counted
 resulting findings remain visible in the exception, quality, summary, and manifest outputs.
 
 An invalid mapping returns the same exit code with `MAPPING_CONFIG_ERROR`.
+
+## Continuous integration
+
+`.github/workflows/ci.yml` runs for pushes and pull requests targeting `main`, and can also be
+started manually. It tests Python 3.11, 3.12, and 3.13; compiles the Python sources; runs the full
+automated test suite; validates the public contracts; confirms deterministic synthetic outputs;
+builds a wheel; and smoke-tests the installed command.
+
+The workflow has read-only repository permission, checks out without persisted credentials, uses
+only synthetic repository fixtures, uploads no data or build artifacts, and performs no
+deployment. Its GitHub-maintained actions are pinned to full commit SHAs. A passing workflow
+demonstrates that the checked-in technical tests succeeded in GitHub's runner environment; it is
+not clinical validation or approval for real-data processing.

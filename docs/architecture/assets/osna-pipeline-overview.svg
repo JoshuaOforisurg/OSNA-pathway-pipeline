@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1330" viewBox="0 0 720 1330" role="img" aria-labelledby="title desc">
+  <title id="title">OSNA Pathway Pipeline overview</title>
+  <desc id="desc">A vertical mobile-friendly diagram showing four source domains entering the implemented pipeline core, which creates pathway evidence. It distinguishes current synthetic outputs from possible future interfaces.</desc>
+
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#4f6070"/>
+    </marker>
+    <style>
+      .title { font: 700 32px Arial, Helvetica, sans-serif; fill: #102a43; text-anchor: middle; }
+      .subtitle { font: 400 18px Arial, Helvetica, sans-serif; fill: #526575; text-anchor: middle; }
+      .section { font: 700 15px Arial, Helvetica, sans-serif; letter-spacing: 1.4px; fill: #087e78; }
+      .card-title { font: 700 24px Arial, Helvetica, sans-serif; fill: #102a43; text-anchor: middle; }
+      .row-title { font: 700 19px Arial, Helvetica, sans-serif; fill: #102a43; }
+      .row-detail { font: 400 17px Arial, Helvetica, sans-serif; fill: #526575; }
+      .step { font: 700 19px Arial, Helvetica, sans-serif; fill: #102a43; }
+      .detail { font: 400 17px Arial, Helvetica, sans-serif; fill: #526575; }
+      .small-title { font: 700 18px Arial, Helvetica, sans-serif; fill: #102a43; text-anchor: middle; }
+      .small-detail { font: 400 15px Arial, Helvetica, sans-serif; fill: #526575; text-anchor: middle; }
+      .footer { font: 700 16px Arial, Helvetica, sans-serif; fill: #7a4b00; text-anchor: middle; }
+      .flow { fill: none; stroke: #4f6070; stroke-width: 4; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect x="1" y="1" width="718" height="1328" rx="22" fill="#ffffff" stroke="#d6e0e7" stroke-width="2"/>
+
+  <text x="360" y="48" class="title">How the OSNA pathway pipeline works</text>
+  <text x="360" y="78" class="subtitle">One traceable view assembled from separate recorded events</text>
+
+  <text x="48" y="122" class="section">1 · RECORDED SOURCE EVENTS</text>
+  <rect x="48" y="140" width="624" height="270" rx="16" fill="#e7f6f4" stroke="#087e78" stroke-width="3"/>
+
+  <rect x="72" y="164" width="576" height="48" rx="9" fill="#ffffff" stroke="#9acdc8" stroke-width="2"/>
+  <text x="94" y="195" class="row-title">Theatre / EPR</text>
+  <text x="274" y="195" class="row-detail">case, procedure and specimen events</text>
+
+  <rect x="72" y="224" width="576" height="48" rx="9" fill="#ffffff" stroke="#9acdc8" stroke-width="2"/>
+  <text x="94" y="255" class="row-title">Laboratory / LIMS</text>
+  <text x="298" y="255" class="row-detail">receipt and verified-result events</text>
+
+  <rect x="72" y="284" width="576" height="48" rx="9" fill="#ffffff" stroke="#9acdc8" stroke-width="2"/>
+  <text x="94" y="315" class="row-title">OSNA analyser</text>
+  <text x="253" y="315" class="row-detail">run, result and QC facts</text>
+
+  <rect x="72" y="344" width="576" height="48" rx="9" fill="#ffffff" stroke="#9acdc8" stroke-width="2"/>
+  <text x="94" y="375" class="row-title">Communication</text>
+  <text x="263" y="375" class="row-detail">result handoff and acknowledgement</text>
+
+  <path d="M 360 410 V 449" class="flow"/>
+
+  <text x="48" y="478" class="section">2 · IMPLEMENTED PIPELINE CORE</text>
+  <rect x="48" y="496" width="624" height="292" rx="16" fill="#eaf5ee" stroke="#2e8059" stroke-width="3"/>
+  <text x="360" y="535" class="card-title">Validate, link and reconstruct</text>
+
+  <circle cx="91" cy="576" r="19" fill="#2e8059"/>
+  <text x="91" y="583" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+  <text x="126" y="583" class="step">Map and validate</text>
+  <text x="302" y="583" class="detail">explicit fields, codes and timestamps</text>
+
+  <circle cx="91" cy="631" r="19" fill="#2e8059"/>
+  <text x="91" y="638" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+  <text x="126" y="638" class="step">Match safely</text>
+  <text x="257" y="638" class="detail">exact case, procedure and specimen IDs</text>
+
+  <circle cx="91" cy="686" r="19" fill="#2e8059"/>
+  <text x="91" y="693" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+  <text x="126" y="693" class="step">Standardise events</text>
+  <text x="305" y="693" class="detail">one source-neutral model with lineage</text>
+
+  <circle cx="91" cy="741" r="19" fill="#2e8059"/>
+  <text x="91" y="748" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+  <text x="126" y="748" class="step">Check and measure</text>
+  <text x="316" y="748" class="detail">timelines, repeats, gaps and durations</text>
+
+  <path d="M 360 788 V 827" class="flow"/>
+
+  <text x="48" y="856" class="section">3 · PATHWAY EVIDENCE</text>
+  <rect x="48" y="874" width="624" height="238" rx="16" fill="#edf3fb" stroke="#2d63a8" stroke-width="3"/>
+  <text x="360" y="913" class="card-title">Reviewable, reproducible outputs</text>
+
+  <rect x="72" y="938" width="270" height="66" rx="10" fill="#ffffff" stroke="#9db7d7" stroke-width="2"/>
+  <text x="207" y="966" class="small-title">Specimen timelines</text>
+  <text x="207" y="989" class="small-detail">one pathway per specimen</text>
+
+  <rect x="378" y="938" width="270" height="66" rx="10" fill="#ffffff" stroke="#9db7d7" stroke-width="2"/>
+  <text x="513" y="966" class="small-title">Assay-run histories</text>
+  <text x="513" y="989" class="small-detail">initial, failed and repeat runs</text>
+
+  <rect x="72" y="1018" width="270" height="66" rx="10" fill="#ffffff" stroke="#9db7d7" stroke-width="2"/>
+  <text x="207" y="1046" class="small-title">Metrics and exceptions</text>
+  <text x="207" y="1069" class="small-detail">timings, gaps and conflicts</text>
+
+  <rect x="378" y="1018" width="270" height="66" rx="10" fill="#ffffff" stroke="#9db7d7" stroke-width="2"/>
+  <text x="513" y="1046" class="small-title">Audit manifest</text>
+  <text x="513" y="1069" class="small-detail">versions, counts and checksums</text>
+
+  <path d="M 360 1112 V 1151" class="flow"/>
+
+  <text x="48" y="1180" class="section">4 · CURRENT PRODUCT BOUNDARY</text>
+  <rect x="48" y="1198" width="294" height="80" rx="12" fill="#eaf5ee" stroke="#2e8059" stroke-width="3"/>
+  <text x="195" y="1228" class="small-title">Implemented today</text>
+  <text x="195" y="1252" class="small-detail">local synthetic batch pipeline</text>
+
+  <rect x="378" y="1198" width="294" height="80" rx="12" fill="#f5f7fa" stroke="#2d63a8" stroke-width="3" stroke-dasharray="9 6"/>
+  <text x="525" y="1228" class="small-title">Possible later</text>
+  <text x="525" y="1252" class="small-detail">governed interfaces or dashboard</text>
+
+  <rect x="48" y="1292" width="624" height="24" rx="8" fill="#fff4df"/>
+  <text x="360" y="1309" class="footer">Not deployed or approved for clinical use</text>
+</svg>

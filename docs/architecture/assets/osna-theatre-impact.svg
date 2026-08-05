@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1460" viewBox="0 0 720 1460" role="img" aria-labelledby="title desc">
+  <title id="title">From pathway questions to potential theatre improvement</title>
+  <desc id="desc">A vertical mobile-friendly diagram showing pathway questions becoming retrospective evidence, joint theatre and laboratory review, locally owned service changes, and measurement of benefits and unintended effects.</desc>
+
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#4f6070"/>
+    </marker>
+    <style>
+      .title { font: 700 30px Arial, Helvetica, sans-serif; fill: #102a43; text-anchor: middle; }
+      .subtitle { font: 400 18px Arial, Helvetica, sans-serif; fill: #526575; text-anchor: middle; }
+      .section { font: 700 15px Arial, Helvetica, sans-serif; letter-spacing: 1.4px; fill: #087e78; }
+      .card-title { font: 700 23px Arial, Helvetica, sans-serif; fill: #102a43; text-anchor: middle; }
+      .question { font: 700 19px Arial, Helvetica, sans-serif; fill: #102a43; }
+      .item { font: 400 17px Arial, Helvetica, sans-serif; fill: #425466; }
+      .small-title { font: 700 18px Arial, Helvetica, sans-serif; fill: #102a43; text-anchor: middle; }
+      .small-detail { font: 400 15px Arial, Helvetica, sans-serif; fill: #526575; text-anchor: middle; }
+      .boundary { font: 700 16px Arial, Helvetica, sans-serif; fill: #7a4b00; text-anchor: middle; }
+      .flow { fill: none; stroke: #4f6070; stroke-width: 4; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect x="1" y="1" width="718" height="1458" rx="22" fill="#ffffff" stroke="#d6e0e7" stroke-width="2"/>
+
+  <text x="360" y="47" class="title">From pathway questions to theatre improvement</text>
+  <text x="360" y="77" class="subtitle">The current route is retrospective, reviewed and measurable</text>
+
+  <text x="48" y="122" class="section">1 · ASK QUESTIONS ACROSS THE WHOLE PATHWAY</text>
+  <rect x="48" y="140" width="624" height="268" rx="16" fill="#e7f6f4" stroke="#087e78" stroke-width="3"/>
+
+  <circle cx="89" cy="184" r="7" fill="#087e78"/>
+  <text x="112" y="191" class="question">Where is recorded time being spent?</text>
+  <line x1="78" y1="215" x2="642" y2="215" stroke="#b9dcd8" stroke-width="2"/>
+
+  <circle cx="89" cy="245" r="7" fill="#087e78"/>
+  <text x="112" y="252" class="question">Was communication and acknowledgement recorded?</text>
+  <line x1="78" y1="276" x2="642" y2="276" stroke="#b9dcd8" stroke-width="2"/>
+
+  <circle cx="89" cy="306" r="7" fill="#087e78"/>
+  <text x="112" y="313" class="question">Which assay run supplied the verified result?</text>
+  <line x1="78" y1="337" x2="642" y2="337" stroke="#b9dcd8" stroke-width="2"/>
+
+  <circle cx="89" cy="367" r="7" fill="#087e78"/>
+  <text x="112" y="374" class="question">Did every recorded specimen complete the pathway?</text>
+
+  <path d="M 360 408 V 447" class="flow"/>
+
+  <text x="48" y="476" class="section">2 · CREATE REPRODUCIBLE EVIDENCE</text>
+  <rect x="48" y="494" width="624" height="220" rx="16" fill="#edf3fb" stroke="#2d63a8" stroke-width="3"/>
+  <text x="360" y="534" class="card-title">The pipeline reconstructs what was recorded</text>
+
+  <text x="86" y="579" class="item">✓  Links events with explicit case and specimen identifiers</text>
+  <text x="86" y="616" class="item">✓  Calculates separately defined pathway timings</text>
+  <text x="86" y="653" class="item">✓  Preserves every assay attempt and its QC state</text>
+  <text x="86" y="690" class="item">✓  Reports missing, conflicting and orphaned records</text>
+
+  <path d="M 360 714 V 753" class="flow"/>
+
+  <text x="48" y="782" class="section">3 · REVIEW THE EVIDENCE TOGETHER</text>
+  <rect x="48" y="800" width="624" height="154" rx="16" fill="#f7f2e8" stroke="#a66b13" stroke-width="3"/>
+  <text x="360" y="840" class="card-title">Joint service review</text>
+  <text x="360" y="878" class="small-title">Theatre · laboratory · informatics · audit</text>
+  <text x="360" y="909" class="small-detail">Confirm meaning, investigate context and avoid assigning blame from timing alone</text>
+  <text x="360" y="934" class="small-detail">Existing clinical systems remain authoritative</text>
+
+  <path d="M 360 954 V 993" class="flow"/>
+
+  <text x="48" y="1022" class="section">4 · CHOOSE A LOCALLY OWNED IMPROVEMENT</text>
+  <rect x="48" y="1040" width="624" height="224" rx="16" fill="#eaf5ee" stroke="#2e8059" stroke-width="3"/>
+
+  <rect x="72" y="1066" width="270" height="72" rx="10" fill="#ffffff" stroke="#a8cdb8" stroke-width="2"/>
+  <text x="207" y="1096" class="small-title">Handoffs</text>
+  <text x="207" y="1120" class="small-detail">review transport or receipt steps</text>
+
+  <rect x="378" y="1066" width="270" height="72" rx="10" fill="#ffffff" stroke="#a8cdb8" stroke-width="2"/>
+  <text x="513" y="1096" class="small-title">Documentation</text>
+  <text x="513" y="1120" class="small-detail">clarify recording responsibilities</text>
+
+  <rect x="72" y="1154" width="270" height="72" rx="10" fill="#ffffff" stroke="#a8cdb8" stroke-width="2"/>
+  <text x="207" y="1184" class="small-title">Process and training</text>
+  <text x="207" y="1208" class="small-detail">target recurring pathway gaps</text>
+
+  <rect x="378" y="1154" width="270" height="72" rx="10" fill="#ffffff" stroke="#a8cdb8" stroke-width="2"/>
+  <text x="513" y="1184" class="small-title">System integration</text>
+  <text x="513" y="1208" class="small-detail">consider only when evidence supports it</text>
+
+  <path d="M 360 1264 V 1303" class="flow"/>
+
+  <text x="48" y="1332" class="section">5 · MEASURE WHAT CHANGED</text>
+  <rect x="48" y="1350" width="624" height="62" rx="13" fill="#f4f7f9" stroke="#607789" stroke-width="3"/>
+  <text x="360" y="1377" class="small-title">Compare the agreed baseline, benefit and unintended effects</text>
+  <text x="360" y="1400" class="small-detail">A change is not an improvement until it is evaluated</text>
+
+  <rect x="48" y="1425" width="624" height="22" rx="8" fill="#fff4df"/>
+  <text x="360" y="1441" class="boundary">No live tracking, alerts or clinical decisions in the current prototype</text>
+</svg>

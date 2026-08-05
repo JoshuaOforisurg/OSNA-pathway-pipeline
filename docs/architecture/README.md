@@ -8,6 +8,11 @@ a governed environment without linking pathways or writing outputs. Each file re
 different source system so that integration problems are visible rather than hidden inside one
 convenient dataset.
 
+![Mobile-friendly overview of the OSNA Pathway Pipeline](assets/osna-pipeline-overview.svg)
+
+The compact overview above is intended for phones and tablets. The flow below provides the more
+detailed component view used for technical review.
+
 ```text
 source mapping ─────────┐
 theatre events ─────────┤

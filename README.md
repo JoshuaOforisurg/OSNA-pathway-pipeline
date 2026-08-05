@@ -7,13 +7,20 @@ pathway between breast surgery and the molecular laboratory.**
 > clinical use. Full pathway processing is restricted to deliberately generated synthetic data.
 > Approved clinical extracts may only use the validation-only path inside a governed environment.
 
+For a guided view of the product, clinical model, technical design, operating instructions, and
+safety boundaries, [read the project documentation](docs/README.md).
+
 ## How the pipeline works
 
 The pipeline core is currently implemented locally with synthetic CSV files. In a future approved
 environment, governed source connectors and storage could replace the local file-handling layer
 without changing the canonical event model or the main validation and transformation logic.
 
-![High-level OSNA Pathway Pipeline flow](docs/architecture/assets/osna-pipeline-flow.png)
+![Mobile-friendly overview of the OSNA Pathway Pipeline](docs/architecture/assets/osna-pipeline-overview.svg)
+
+The overview is deliberately vertical so it remains readable on smaller screens. A
+[detailed component-level architecture diagram](docs/architecture/assets/osna-pipeline-flow.svg)
+is also available for technical review.
 
 The current repository implements the mapping, validation, exact-identifier matching, canonical
 event model, transformations, metrics, quality controls, CSV and JSON evidence files, and batch
@@ -120,6 +127,26 @@ such as:
 The repository tests whether an integration and evidence layer can answer those questions without
 replacing systems that already perform ordering, analysis, result reporting, or clinical record
 keeping.
+
+## How answering these questions could improve theatre work
+
+The immediate product is retrospective. If approved real-data evaluation shows that its evidence
+is sufficiently complete and useful, it could support service improvement around frontline staff.
+
+![From pathway questions to potential theatre improvement](docs/architecture/assets/osna-theatre-impact.svg)
+
+| Pathway evidence | Potential effect on theatre work | How the pipeline plans to provide it |
+| --- | --- | --- |
+| Specimen transit and pathway-stage timings | Locate recurring recorded delays and focus improvement on the affected handoff or stage | Link source timestamps and calculate separately defined transport, assay, turnaround, and communication durations |
+| Communication and theatre acknowledgement | Show whether the recorded handoff loop is complete | Keep verification, communication, and acknowledgement as separate traceable events |
+| Initial, failed-QC, and repeat runs | Make complex cases auditable without confusing an earlier run with the verified result | Preserve every run and require explicit laboratory verification to select the result-bearing run |
+| Specimen completion and reproducible audit evidence | Reveal unresolved linkage gaps and reduce repeated manual reconstruction | Use exact identifiers, timelines, summaries, exceptions, lineage, and a deterministic manifest |
+
+These are potential benefits, not demonstrated outcomes. The prototype cannot live-track a
+specimen, notify theatre, or replace the result telephone call. A future operational layer would
+require authoritative interfaces, user research, safety work, governance, and ownership. See the
+[detailed evidence-to-improvement mapping](docs/product/vision.md#evidence-to-improvement-detail)
+and [frontline research note](docs/discovery/frontline-value-and-human-factors-notes.md).
 
 ## Product boundary
 
